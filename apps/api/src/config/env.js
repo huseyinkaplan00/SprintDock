@@ -16,7 +16,7 @@ export const env = {
   jwtRefreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
   corsOrigins:
     process.env.CORS_ORIGINS ||
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,https://sprintdock-app.vercel.app',
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,https://sprintdock-huseyinkaplan.vercel.app',
 
   otpTtlMinutes: Number(process.env.OTP_TTL_MINUTES || 5),
   otpMaxAttempts: Number(process.env.OTP_MAX_ATTEMPTS || 3),

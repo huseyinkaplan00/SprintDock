@@ -8,7 +8,7 @@ const allowedOrigins = env.corsOrigins
 function isOriginAllowed(origin) {
   if (!origin) return true
   if (allowedOrigins.includes('*')) return true
-  if (origin === 'https://sprintdock-app.vercel.app') return true
+  if (origin === 'https://sprintdock-huseyinkaplan.vercel.app') return true
   // Keep preview support for Vercel branch deployments.
   if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return true
   if (

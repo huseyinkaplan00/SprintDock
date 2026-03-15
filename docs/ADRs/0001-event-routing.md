@@ -1,29 +1,29 @@
-# ADR-0001: Olay Yonetimi ve Gercek Zamanli Kopru
+# ADR-0001: Rabbit Routing Keys to Socket Event Mapping
 
-## Durum
+## Status
 
-Kabul edildi
+Accepted.
 
-## Baglam
+## Context
 
-Gorev degisiklikleri API tarafinda uretilir. Yazma endpoint'lerini socket yayiniyla dogrudan baglamadan asenkron yan etkiler ve gercek zamanli UI guncellemeleri gerekir.
+The application publishes domain events over RabbitMQ and forwards selected events to the frontend through Socket.io project rooms. The mapping needs to stay explicit and stable so the worker remains predictable and the frontend can invalidate queries consistently.
 
-## Karar
+## Decision
 
-1. API, sabit routing key'ler ile Rabbit olaylarini yayinlar:
-   - `task_created`
-   - `task_assigned`
-   - `comment_added`
-   - `otp_requested`
-2. Worker, `sprintdock.events` -> `sprintdock.worker` uzerinden tum key'leri tuketir.
-3. Worker, alan routing key'lerini socket event adlarina esler:
-   - `task_created`/`task_assigned` -> `task.updated`
-   - `comment_added` -> `comment.added`
-4. Worker, `INTERNAL_API_KEY` ile API ic endpoint'ini (`/internal/realtime`) cagirir.
-5. API, `/realtime` namespace altinda `project:{projectId}` odasina yayin yapar.
+- API publishes Rabbit routing keys with underscore format:
+  - `task_created`
+  - `task_assigned`
+  - `comment_added`
+- Worker consumes every routing key from `sprintdock.events` into `sprintdock.worker`
+- Worker forwards events to the API internal realtime endpoint using dot-format socket event names:
+  - `task.updated`
+  - `comment.added`
+- Project room lifecycle remains:
+  - `join_project`
+  - `leave_project`
 
-## Sonuclar
+## Consequences
 
-- API yazma islemleri hizli kalir ve yan etkilerden ayrilir.
-- Gercek zamanli kopru worker mantiginda merkezilesir.
-- Olay adlandirmasi backend/frontend arasinda geriye donuk uyumlu kalir.
+- Broker contracts stay simple and explicit
+- Frontend and worker use a stable normalization layer
+- Realtime debugging is easier because broker and socket naming conventions are intentionally different by concern

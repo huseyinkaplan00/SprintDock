@@ -1,12 +1,12 @@
 {
   "info": {
     "_postman_id": "4f3f8b76-c4f8-4b9a-b3b2-d309866f6c5d",
-    "name": "SprintDock API (Turkce)",
+    "name": "SprintDock API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Saglik Kontrolu",
+      "name": "Health Check",
       "request": {
         "method": "GET",
         "header": [],
@@ -18,7 +18,7 @@
       }
     },
     {
-      "name": "Kimlik - OTP Iste",
+      "name": "Auth - Request OTP",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -31,7 +31,7 @@
       }
     },
     {
-      "name": "Kimlik - OTP Dogrula",
+      "name": "Auth - Verify OTP",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -47,7 +47,7 @@
       }
     },
     {
-      "name": "Kimlik - Yenile",
+      "name": "Auth - Refresh",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -60,14 +60,14 @@
       }
     },
     {
-      "name": "Projeler - Olustur",
+      "name": "Projects - Create",
       "request": {
         "method": "POST",
         "header": [
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{accessToken}}" }
         ],
-        "body": { "mode": "raw", "raw": "{\"title\":\"Demo\",\"description\":\"Portfoy demo projesi\"}" },
+        "body": { "mode": "raw", "raw": "{\"title\":\"Demo\",\"description\":\"Portfolio demo project\"}" },
         "url": {
           "raw": "{{baseUrl}}/api/projects",
           "host": ["{{baseUrl}}"],
@@ -76,7 +76,7 @@
       }
     },
     {
-      "name": "Projeler - Listele",
+      "name": "Projects - List",
       "request": {
         "method": "GET",
         "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],

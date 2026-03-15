@@ -1,26 +1,25 @@
-# ADR-0002: Kalite Kapisi ve E2E Dogrulama
+# ADR-0002: Quality Gate and End-to-End Validation
 
-## Durum
+## Status
 
-Kabul edildi
+Accepted.
 
-## Baglam
+## Context
 
-Proje teknik olarak calisiyor olsa da degerlendirme ve ekip sureclerinde su riskler vardi:
+The project needs a repeatable baseline that proves build health, test coverage, and deploy readiness beyond local manual checks.
 
-- Her degisiklikte otomatik kalite kontrolu yok
-- Kritik kullanici akislarinin uctan uca test kapsami sinirli
-- Deploy/merge oncesi standart bir dogrulama zinciri tanimli degil
+## Decision
 
-## Karar
+- Add a CI workflow that runs:
+  - lint
+  - unit/integration tests
+  - production build
+  - Docker smoke validation
+  - Playwright E2E flow
+- Keep a single end-to-end flow covering login, project creation, task creation, task detail navigation, and comment creation.
 
-1. GitHub Actions uzerinde standart CI hattina gecildi.
-2. Lint + test + build adimlari zorunlu hale getirildi.
-3. Docker Compose ile smoke kontrol eklendi.
-4. Playwright ile OTP giris + temel CRUD akisina E2E test eklendi.
-5. Pre-commit seviyesinde husky + lint-staged ile yerel kalite kapisi eklendi.
+## Consequences
 
-## Sonuclar
-
-- Regresyonlar daha erken asamada yakalanir.
-- Kod inceleme surecinde guven artar.
+- Regression detection happens earlier
+- The repository is easier to evaluate as a portfolio project
+- Changes to auth, CRUD, or realtime flows become harder to merge without evidence

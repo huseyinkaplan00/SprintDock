@@ -30,7 +30,7 @@ services:
       - key: JWT_REFRESH_EXPIRY
         value: 7d
       - key: CORS_ORIGINS
-        value: https://sprintdock-app.vercel.app
+        value: https://sprintdock-huseyinkaplan.vercel.app
       - key: OTP_RATE_LIMIT_WINDOW_SEC
         value: 60
       - key: OTP_RATE_LIMIT_MAX

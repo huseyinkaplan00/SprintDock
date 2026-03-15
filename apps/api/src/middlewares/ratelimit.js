@@ -23,9 +23,11 @@ function memoryTtlSec(key) {
 export function rateLimit({ keyPrefix, windowSec, max, keyGenerator }) {
   return async (req, res, next) => {
     const key = `${keyPrefix}:${keyGenerator(req)}`
-    const redis = await ensureRedisConnected()
+    let redis = null
 
     try {
+      redis = await ensureRedisConnected()
+
       if (redis) {
         const current = await redis.incr(key)
         if (current === 1) {

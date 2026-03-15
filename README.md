@@ -1,25 +1,25 @@
 # SprintDock
 
-SprintDock, Hüseyin Kaplan tarafından portföy odaklı geliştirilen gerçek zamanlı bir iş takip ve ekip koordinasyon uygulamasıdır. Monorepo yapı içinde Express API, worker, React istemcisi ve ortak UI paketini bir arada barındırır.
+SprintDock is a portfolio-grade realtime work coordination application built by Huseyin Kaplan. It ships as a JavaScript monorepo with an Express API, background worker, React client, and shared UI package.
 
-## Öne Çıkan Özellikler
+## Highlights
 
-- OTP tabanlı giriş akışı ve JWT access/refresh token yönetimi
-- Proje, görev ve yorum için uçtan uca CRUD akışları
-- RabbitMQ üzerinden event publish/consume hattı
-- Socket.io ile proje odalarına gerçek zamanlı güncelleme akışı
-- Tekrar kullanılabilir `packages/ui` bileşen paketi
-- Docker Compose, Render ve Vercel ile yerel + bulut çalıştırma seçenekleri
+- OTP-based authentication flow with JWT access/refresh token rotation
+- End-to-end CRUD flows for projects, tasks, comments, and sessions
+- RabbitMQ-backed event publishing and worker consumption pipeline
+- Socket.io project rooms for realtime task and comment updates
+- Reusable `packages/ui` component library shared across the frontend
+- Local Docker setup plus cloud deployment support for Vercel and Render
 
-## Mimari Özet
+## Architecture
 
-- `apps/api` - Express REST API, auth/session akışları, Rabbit publish ve Socket.io server
-- `apps/worker` - Rabbit consumer, bildirim/analytics işleyicileri ve internal realtime bridge
-- `apps/web` - React + Vite istemcisi, TanStack Query, Zustand ve gerçek zamanlı invalidation katmanı
-- `packages/ui` - ortak UI primitive ve veri tablo bileşenleri
-- `packages/common` - paylaşılan schema/sabit katmanı
+- `apps/api` - Express REST API, auth/session flows, Rabbit publishers, Socket.io server
+- `apps/worker` - Rabbit consumers, notifier/analytics handlers, internal realtime bridge
+- `apps/web` - React + Vite client using TanStack Query, Zustand, and socket invalidation
+- `packages/ui` - shared UI primitives, tables, dialogs, dropdowns, toasts
+- `packages/common` - shared constants and schemas
 
-## Teknoloji Yığını
+## Stack
 
 - Node.js
 - Express
@@ -30,15 +30,15 @@ SprintDock, Hüseyin Kaplan tarafından portföy odaklı geliştirilen gerçek z
 - Socket.io
 - pnpm workspaces
 
-## Yerel Kurulum
+## Local Setup
 
-Gereksinimler:
+Requirements:
 
 - Node.js 20+
 - pnpm 10+
 - Docker + Docker Compose
 
-Kurulum:
+Install and verify:
 
 ```bash
 pnpm install
@@ -47,19 +47,19 @@ pnpm test
 pnpm build
 ```
 
-Geliştirme modunda başlatma:
+Run in development:
 
 ```bash
 pnpm dev
 ```
 
-Varsayılan adresler:
+Default local addresses:
 
 - API: `http://localhost:4000`
 - Web: `http://localhost:5173`
 - RabbitMQ UI: `http://localhost:15672`
 
-## Docker ile Çalıştırma
+## Docker
 
 ```bash
 docker compose up -d --build
@@ -67,11 +67,11 @@ docker compose ps
 curl -i http://localhost:4000/health
 ```
 
-## Ortam Değişkenleri
+## Environment Variables
 
-Örnek değerler için `.env.example` dosyasını kullan.
+Use `.env.example` as the starting point.
 
-Temel değişkenler:
+Core variables:
 
 - `MONGO_URI`
 - `REDIS_URL`
@@ -83,27 +83,33 @@ Temel değişkenler:
 - `VITE_API_URL`
 - `VITE_SOCKET_URL`
 
-Notlar:
+Notes:
 
-- MongoDB parolasında özel karakter varsa connection string içinde URL-encode edilmelidir.
-- `OTP_ECHO=true` yalnızca demo/testing senaryosu içindir; gerçek üretimde OTP email/SMS ile iletilmelidir.
+- URL-encode MongoDB passwords when they contain special characters.
+- `OTP_ECHO=true` is a demo-only switch and should stay disabled in real production environments.
 
-## Bulut Dağıtımı
+## Live Demo
+
+- Frontend: `https://sprintdock-huseyinkaplan.vercel.app`
+- API health: `https://sprintdock-api.onrender.com/health`
+- Worker health: `https://sprintdock-worker.onrender.com/health`
+
+## Cloud Deployment
 
 ### Vercel
 
-Frontend için `vercel.json` hazırdır.
+The frontend is configured with `vercel.json`.
 
-Gerekli environment variable'lar:
+Required environment variables:
 
 - `VITE_API_URL=https://<api-domain>`
 - `VITE_SOCKET_URL=https://<api-domain>`
 
 ### Render
 
-`render.yaml` API ve worker servisleri için başlangıç şablonunu içerir.
+`render.yaml` contains the baseline service configuration for both the API and the worker.
 
-API tarafında gerekli env seti:
+API env set:
 
 - `NODE_ENV=production`
 - `PORT=10000`
@@ -114,9 +120,9 @@ API tarafında gerekli env seti:
 - `JWT_REFRESH_SECRET=<secret>`
 - `CORS_ORIGINS=https://<your-vercel-domain>`
 - `INTERNAL_API_KEY=<shared-secret>`
-- `OTP_ECHO=true` yalnızca demo gerekiyorsa
+- `OTP_ECHO=true` only for demo environments
 
-Worker tarafında gerekli env seti:
+Worker env set:
 
 - `NODE_ENV=production`
 - `MONGO_URI=<atlas-uri>`
@@ -125,15 +131,15 @@ Worker tarafında gerekli env seti:
 - `INTERNAL_API_KEY=<shared-secret>`
 - `API_INTERNAL_URL=https://<api-domain>/internal/realtime`
 
-## Doğrulama Akışları
+## Verification
 
-Health kontrolü:
+Health check:
 
 ```bash
 curl -i https://<api-domain>/health
 ```
 
-OTP isteme:
+Request OTP:
 
 ```bash
 curl -X POST https://<api-domain>/api/auth/request-otp \
@@ -141,7 +147,7 @@ curl -X POST https://<api-domain>/api/auth/request-otp \
   -d '{"email":"demo@example.com"}'
 ```
 
-OTP doğrulama:
+Verify OTP:
 
 ```bash
 curl -X POST https://<api-domain>/api/auth/verify-otp \
@@ -149,7 +155,7 @@ curl -X POST https://<api-domain>/api/auth/verify-otp \
   -d '{"email":"demo@example.com","otp":"123456"}'
 ```
 
-CRUD smoke akışı:
+Smoke flow:
 
 - `POST /api/projects`
 - `GET /api/projects`
@@ -157,12 +163,12 @@ CRUD smoke akışı:
 - `GET /api/tasks?projectId=...`
 - `POST /api/comments`
 
-Event doğrulaması:
+Event checks:
 
-- Worker loglarında `task_created`, `task_assigned`, `comment_added`
-- Socket tarafında `task.updated`, `comment.added`
+- Worker logs should show `task_created`, `task_assigned`, `comment_added`
+- Socket listeners should receive `task.updated` and `comment.added`
 
-## Kalite Kapısı
+## Quality Gate
 
 - `pnpm lint`
 - `pnpm test`
@@ -170,14 +176,14 @@ Event doğrulaması:
 - `docker compose up -d --build`
 - `pnpm --filter @sprintdock/web test:e2e`
 
-## Dokümantasyon
+## Documentation
 
-- ADR'ler: `docs/ADRs`
-- Mimari akış: `docs/architecture/realtime-flow.svg`
+- ADRs: `docs/ADRs`
+- Realtime flow: `docs/architecture/realtime-flow.svg`
 - ERD: `docs/ERD/sprintdock-erd.svg`
-- Postman koleksiyonu: `docs/postman/SprintDock.postman_collection.json`
-- İyileştirme günlüğü: `docs/uygulanan-iyilestirmeler.md`
+- Postman collection: `docs/postman/SprintDock.postman_collection.json`
+- Improvement log: `docs/uygulanan-iyilestirmeler.md`
 
-## Lisans ve Kullanım
+## Usage Note
 
-Bu repo portföy ve teknik gösterim amaçlı hazırlanmıştır. Canlı ortama çıkmadan önce secret yönetimi, OTP iletim altyapısı ve servis planları proje ihtiyaçlarına göre yeniden düzenlenmelidir.
+This repository is intended for portfolio and technical demonstration purposes. Before using it in a real production setting, rotate all secrets, replace demo OTP delivery with a proper messaging channel, and review service plans and operational safeguards.

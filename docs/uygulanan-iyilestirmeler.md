@@ -1,87 +1,87 @@
-# Uygulanan İyileştirmeler
+# Applied Improvements
 
-Bu doküman SprintDock içinde uygulanan ve ürünün üretim kalitesini artıran başlıca iyileştirmeleri özetler.
+This document summarizes the key improvements implemented in SprintDock to make the product more robust, deployable, and easier to evaluate.
 
-## 1) Kalite Kapısı ve CI
+## 1) CI and Quality Gate
 
-Dosya: `.github/workflows/ci.yml`
+File: `.github/workflows/ci.yml`
 
-Eklenen kontroller:
+Checks included:
 
 - `pnpm lint`
 - `pnpm test`
 - `pnpm build`
-- Docker smoke kontrolü
-- Playwright E2E akışı
+- Docker smoke validation
+- Playwright end-to-end flow
 
-Etkisi:
+Effect:
 
-- Değişikliklerin ortak kalite kapısından geçmesi
-- Yerel ortam farklarından kaynaklı regresyon riskinin azalması
+- Every change passes through the same baseline quality gate
+- Lower regression risk across local and hosted environments
 
-## 2) E2E Akış Doğrulaması
+## 2) End-to-End Flow Coverage
 
-Dosyalar:
+Files:
 
 - `apps/web/playwright.config.js`
 - `apps/web/e2e/auth-and-crud.spec.js`
 
-Kapsam:
+Covered flow:
 
-- OTP ile giriş
-- Proje oluşturma
-- Görev oluşturma
-- Görev detayına geçiş
-- Yorum ekleme
+- OTP login
+- Project creation
+- Task creation
+- Task detail navigation
+- Comment creation
 
-## 3) UI Tutarlılığı
+## 3) UI Consistency
 
-Yapılanlar:
+Implemented:
 
-- Protected sayfalar tek layout altında toplandı
-- Ortak sol menü ve üst çubuk standardize edildi
-- Tablolar, toast'lar ve form davranışları ortak bileşenler üzerinden taşındı
+- Protected pages share a single application shell
+- Sidebar and topbar are standardized
+- Tables, toasts, and form behaviors are consolidated into shared UI components
 
-## 4) Frontend Performans İyileştirmesi
+## 4) Frontend Performance
 
-Dosya: `apps/web/src/app/routes/index.jsx`
+File: `apps/web/src/app/routes/index.jsx`
 
-Yapılanlar:
+Implemented:
 
-- Sayfalar `React.lazy` ile bölündü
-- `Suspense` fallback ve skeleton davranışları eklendi
+- Route-based lazy loading with `React.lazy`
+- `Suspense` fallbacks and skeleton loading states
 
-## 5) Realtime Dağıtım Hazırlığı
+## 5) Realtime Deployment Readiness
 
-Yapılanlar:
+Implemented:
 
-- Frontend, local/ngrok bağımlılığı olmadan hosted API kullanacak şekilde env tabanlı hale getirildi
-- API ve worker dış servislerle çalışacak şekilde ayrıştırıldı
-- Render üzerinde worker için `/health` endpoint'i desteklendi
+- Frontend reads hosted API endpoints from environment variables instead of local/ngrok URLs
+- API and worker are cleanly separated for managed services
+- Worker supports a `/health` endpoint when deployed as a web service
 
-## 6) Mobil UX İyileştirmeleri
+## 6) Mobile UX Hardening
 
-Yapılanlar:
+Implemented:
 
-- OTP girişinde tam kopyala-yapıştır desteği eklendi
-- iOS input zoom problemi azaltıldı
-- Mobil klavye açıldığında aktif alanın görünür kalması için scroll davranışı düzeltildi
-- Dar ekranlarda tablo scroll davranışı sadeleştirildi
+- Full OTP paste support
+- Reduced iOS input zoom issues
+- Improved keyboard/focus visibility when the mobile keyboard opens
+- Simplified table scrolling behavior on narrow screens
 
-## 7) Veri Sunumu ve Bilgi Mimarisi
+## 7) Information Architecture
 
-Yapılanlar:
+Implemented:
 
-- Ham ObjectId gösterimleri azaltıldı
-- Tekrarlayan meta veriler sadeleştirildi
-- Görev ve proje detaylarında anlamlı başlık/breadcrumb kullanımı iyileştirildi
+- Reduced raw ObjectId exposure in the UI
+- Removed repeated metadata blocks where possible
+- Improved task and project breadcrumb/title rendering
 
-## 8) Deploy Kararlılığı
+## 8) Deployment Reliability
 
-Yapılanlar:
+Implemented:
 
-- Native `bcrypt` yerine deploy dostu `bcryptjs` kullanıldı
-- `PORT` temelli başlatma ve health kontrol uyumu sağlandı
-- CORS ve Socket allowlist mantığı Vercel/Render akışına uygun hale getirildi
+- Replaced native `bcrypt` with deploy-friendly `bcryptjs`
+- Added `PORT`-aware boot behavior and health compatibility
+- Aligned CORS and Socket allowlists with the Vercel + Render deployment model
 
-Not: Teknik sözleşmeler korunmuştur; endpoint path'leri, Rabbit routing key'leri ve Socket event adları değişmemiştir.
+Note: Public API contracts remain unchanged. Endpoint paths, Rabbit routing keys, and Socket event names are intentionally preserved.
