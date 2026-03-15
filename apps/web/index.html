@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SprintDock</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
+      rel="stylesheet"
+    />
+    <script>
+      ;(() => {
+        document.documentElement.classList.add('icons-loading')
+        if (!document.fonts?.load) {
+          document.documentElement.classList.remove('icons-loading')
+          return
+        }
+        document.fonts
+          .load('24px "Material Symbols Outlined"')
+          .finally(() => document.documentElement.classList.remove('icons-loading'))
+      })()
+    </script>
+
+    <script>
+      ;(() => {
+        const applyTheme = (theme) => {
+          document.documentElement.classList.remove('light', 'dark')
+          document.documentElement.classList.add(theme)
+        }
+
+        try {
+          const persisted = localStorage.getItem('sprintdock-ui')
+          const parsed = persisted ? JSON.parse(persisted) : null
+          const savedTheme = parsed?.state?.theme
+
+          if (savedTheme === 'light' || savedTheme === 'dark') {
+            applyTheme(savedTheme)
+            return
+          }
+        } catch (_error) {
+          // Fall through to system preference.
+        }
+
+        const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        applyTheme(preferred)
+      })()
+    </script>
+  </head>
+  <body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

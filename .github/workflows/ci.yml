@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  kalite-kapisi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: pnpm kur
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Bagimliliklari kur
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  docker-smoke-ve-e2e:
+    needs: kalite-kapisi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: pnpm kur
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Bagimliliklari kur
+        run: pnpm install --frozen-lockfile
+
+      - name: Docker servislerini baslat
+        run: docker compose up -d --build
+
+      - name: API saglik kontrolu bekle
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:4000/health >/dev/null; then
+              echo "API hazir"
+              break
+            fi
+            echo "API bekleniyor..."
+            sleep 3
+          done
+          curl -i http://localhost:4000/health
+
+      - name: Playwright Chromium kur
+        run: pnpm --filter @sprintdock/web exec playwright install --with-deps chromium
+
+      - name: E2E testleri calistir
+        env:
+          E2E_BASE_URL: http://localhost:5173
+        run: pnpm --filter @sprintdock/web test:e2e
+
+      - name: Docker servis durumunu yazdir
+        if: always()
+        run: docker compose ps
+
+      - name: Docker loglarini yazdir
+        if: always()
+        run: docker compose logs --tail=200
+
+      - name: Docker servislerini kapat
+        if: always()
+        run: docker compose down -v

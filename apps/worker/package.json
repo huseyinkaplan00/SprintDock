@@ -1,0 +1,23 @@
+{
+  "name": "@sprintdock/worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "lint": "eslint src",
+    "format": "prettier --write \"src/**/*.{js,json,md}\"",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.8.1",
+    "pino": "^9.3.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

@@ -1,0 +1,118 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: sprintdock-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: sprintdock
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - sprintdock-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: sprintdock-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    networks:
+      - sprintdock-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sprintdock-rabbitmq
+    restart: unless-stopped
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - sprintdock-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: sprintdock-api
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      MONGO_URI: mongodb://admin:admin123@mongodb:27017/sprintdock?authSource=admin
+      REDIS_URL: redis://redis:6379
+      RABBIT_URL: amqp://admin:admin123@rabbitmq:5672
+      JWT_SECRET: change-me
+      JWT_REFRESH_SECRET: change-me-too
+      JWT_ACCESS_EXPIRY: 15m
+      JWT_REFRESH_EXPIRY: 7d
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+      OTP_RATE_LIMIT_WINDOW_SEC: 60
+      OTP_RATE_LIMIT_MAX: 3
+      INTERNAL_API_KEY: change-me-internal
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - sprintdock-network
+
+  worker:
+    build:
+      context: ./apps/worker
+      dockerfile: Dockerfile
+    container_name: sprintdock-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      MONGO_URI: mongodb://admin:admin123@mongodb:27017/sprintdock?authSource=admin
+      REDIS_URL: redis://redis:6379
+      RABBIT_URL: amqp://admin:admin123@rabbitmq:5672
+      INTERNAL_API_KEY: change-me-internal
+      API_INTERNAL_URL: http://api:4000/internal/realtime
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - api
+    networks:
+      - sprintdock-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: sprintdock-web
+    restart: unless-stopped
+    ports:
+      - '5173:5173'
+    environment:
+      VITE_API_URL: http://localhost:4000
+      VITE_SOCKET_URL: http://localhost:4000
+    networks:
+      - sprintdock-network
+
+volumes:
+  mongo-data:
+  redis-data:
+  rabbitmq-data:
+
+networks:
+  sprintdock-network:
+    driver: bridge

@@ -1,0 +1,165 @@
+{
+  "info": {
+    "_postman_id": "4f3f8b76-c4f8-4b9a-b3b2-d309866f6c5d",
+    "name": "SprintDock API (Turkce)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Saglik Kontrolu",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Kimlik - OTP Iste",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"email\":\"test@example.com\"}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/request-otp",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "request-otp"]
+        }
+      }
+    },
+    {
+      "name": "Kimlik - OTP Dogrula",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"test@example.com\",\"otp\":\"123456\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/verify-otp",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "verify-otp"]
+        }
+      }
+    },
+    {
+      "name": "Kimlik - Yenile",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"refreshToken\":\"{{refreshToken}}\"}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/refresh",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "refresh"]
+        }
+      }
+    },
+    {
+      "name": "Projeler - Olustur",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"title\":\"Demo\",\"description\":\"Portfoy demo projesi\"}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/projects",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "projects"]
+        }
+      }
+    },
+    {
+      "name": "Projeler - Listele",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/projects",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "projects"]
+        }
+      }
+    },
+    {
+      "name": "Gorevler - Olustur",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"projectId\":\"{{projectId}}\",\"title\":\"Demo Gorev\",\"description\":\"Postman uzerinden\",\"priority\":\"high\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tasks"]
+        }
+      }
+    },
+    {
+      "name": "Gorevler - Atanan Guncelle",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"assignee\":\"{{userId}}\"}" },
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tasks", "{{taskId}}"]
+        }
+      }
+    },
+    {
+      "name": "Yorumlar - Ekle",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"taskId\":\"{{taskId}}\",\"content\":\"Iyi gorunuyor\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/comments",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "comments"]
+        }
+      }
+    },
+    {
+      "name": "Oturumlar - Listele",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/sessions",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sessions"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "userId", "value": "" }
+  ]
+}

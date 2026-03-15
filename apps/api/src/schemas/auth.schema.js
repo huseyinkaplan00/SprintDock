@@ -1,0 +1,8 @@
+export const authTokenSchema = {
+  type: 'object',
+  properties: {
+    token: { type: 'string', minLength: 1 },
+  },
+  required: ['token'],
+  additionalProperties: false,
+}
