@@ -46,21 +46,21 @@ export async function requestOtp({ email }) {
 export async function verifyOtp({ email, otp, ip, userAgent }) {
   const normalizedEmail = normalizeEmail(email)
   const record = await findOtpByEmail(normalizedEmail)
-  if (!record) throw httpError(404, 'OTP bulunamadi')
+  if (!record) throw httpError(404, 'OTP not found')
 
   if (record.expiresAt < new Date()) {
     await deleteOtp(normalizedEmail)
-    throw httpError(401, 'OTP suresi doldu')
+    throw httpError(401, 'OTP expired')
   }
 
   if (record.attempts >= env.otpMaxAttempts) {
-    throw httpError(429, 'Cok fazla deneme')
+    throw httpError(429, 'Too many attempts')
   }
 
   const ok = await bcrypt.compare(String(otp), record.otpHash)
   if (!ok) {
     await incrementOtpAttempts(normalizedEmail)
-    throw httpError(401, 'Gecersiz OTP')
+    throw httpError(401, 'Invalid OTP')
   }
 
   let user = await findUserByEmail(normalizedEmail)
@@ -102,7 +102,7 @@ export async function refreshToken({ refreshToken }) {
   try {
     payload = verifyRefreshToken(refreshToken)
   } catch (_err) {
-    throw httpError(401, 'Gecersiz refresh token')
+    throw httpError(401, 'Invalid refresh token')
   }
 
   const userId = payload.sub
@@ -110,7 +110,7 @@ export async function refreshToken({ refreshToken }) {
   const sessionId = payload.sid
 
   const session = await findSessionByRefreshTokenId(userId, refreshTokenId)
-  if (!session) throw httpError(401, 'Oturum bulunamadi')
+  if (!session) throw httpError(401, 'Session not found')
 
   const newRefreshTokenId = crypto.randomUUID()
   await updateSessionRefreshToken(sessionId, newRefreshTokenId)
@@ -135,8 +135,8 @@ export async function listSessions({ userId }) {
   const sessions = await listSessionsByUserId(userId)
   return sessions.map((s) => ({
     id: s._id,
-    device: s.device || 'Bilinmeyen cihaz',
-    ip: s.ip || 'Bilinmiyor',
+    device: s.device || 'Unknown device',
+    ip: s.ip || 'Unknown',
     lastUsed: s.lastUsed,
     createdAt: s.createdAt,
   }))

@@ -5,7 +5,7 @@ import { LoadingScreen } from '../../components/common/loading-screen.jsx'
 
 export default function ProtectedRoute({ children }) {
   const { hydrated, isAuthenticated } = useAuth()
-  if (!hydrated) return <LoadingScreen label="Oturum kontrol ediliyor..." />
+  if (!hydrated) return <LoadingScreen label="Checking your session..." />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return children
 }

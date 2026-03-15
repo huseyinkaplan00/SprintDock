@@ -39,7 +39,7 @@ export function rateLimit({ keyPrefix, windowSec, max, keyGenerator }) {
           res.setHeader('Retry-After', String(waitSec))
           return res.status(429).json({
             ok: false,
-            error: 'Cok fazla istek',
+            error: 'Too many requests',
             retryAfterSec: waitSec,
           })
         }
@@ -50,13 +50,13 @@ export function rateLimit({ keyPrefix, windowSec, max, keyGenerator }) {
           res.setHeader('Retry-After', String(waitSec))
           return res.status(429).json({
             ok: false,
-            error: 'Cok fazla istek',
+            error: 'Too many requests',
             retryAfterSec: waitSec,
           })
         }
       }
     } catch (err) {
-      // Rate-limit saklama katmani hata verirse istege izin ver, sadece logla.
+      // If the rate-limit storage layer fails, allow the request and only log the error.
       console.warn('[api] rateLimit error:', err.message)
     }
 

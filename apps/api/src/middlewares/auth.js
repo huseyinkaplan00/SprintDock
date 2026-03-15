@@ -6,18 +6,18 @@ export async function requireAuth(req, res, next) {
   const token = header.startsWith('Bearer ') ? header.slice(7) : header
 
   if (!token) {
-    return res.status(401).json({ ok: false, error: 'Yetkisiz' })
+    return res.status(401).json({ ok: false, error: 'Unauthorized' })
   }
 
   try {
     const payload = verifyAccessToken(token)
     if (!payload?.sid || !payload?.sub) {
-      return res.status(401).json({ ok: false, error: 'Yetkisiz' })
+      return res.status(401).json({ ok: false, error: 'Unauthorized' })
     }
 
     const session = await findSessionById(payload.sid, payload.sub)
     if (!session) {
-      return res.status(401).json({ ok: false, error: 'Oturum gecersiz' })
+      return res.status(401).json({ ok: false, error: 'Invalid session' })
     }
 
     req.user = {
@@ -27,6 +27,6 @@ export async function requireAuth(req, res, next) {
     }
     return next()
   } catch (_err) {
-    return res.status(401).json({ ok: false, error: 'Yetkisiz' })
+    return res.status(401).json({ ok: false, error: 'Unauthorized' })
   }
 }

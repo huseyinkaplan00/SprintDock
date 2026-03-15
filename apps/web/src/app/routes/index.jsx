@@ -48,7 +48,7 @@ const router = createBrowserRouter(
 
 export default function AppRouter() {
   return (
-    <Suspense fallback={<LoadingScreen label="Sayfa yukleniyor..." />}>
+    <Suspense fallback={<LoadingScreen label="Loading page..." />}>
       <RouterProvider
         router={router}
         future={{

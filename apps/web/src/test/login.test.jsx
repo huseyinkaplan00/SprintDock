@@ -5,7 +5,7 @@ import LoginPage from '../features/auth/pages/Login.jsx'
 import { ToastProvider } from '../components/ui/toast.jsx'
 
 describe('LoginPage', () => {
-  test('giris basligini ve OTP gonder eylemini gosterir', () => {
+  test('renders the sign-in title and send OTP action', () => {
     render(
       <ToastProvider>
         <MemoryRouter
@@ -19,7 +19,7 @@ describe('LoginPage', () => {
       </ToastProvider>
     )
 
-    expect(screen.getByText("SprintDock'a Giris Yap")).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'OTP Gonder' })).toBeInTheDocument()
+    expect(screen.getByText('Sign in to SprintDock')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Send OTP' })).toBeInTheDocument()
   })
 })

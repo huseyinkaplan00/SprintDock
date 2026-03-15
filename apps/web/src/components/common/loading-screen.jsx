@@ -1,7 +1,7 @@
 import React from 'react'
 import logo from '../../assets/logo.svg'
 
-export function LoadingScreen({ label = 'Yukleniyor...' }) {
+export function LoadingScreen({ label = 'Loading...' }) {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-grid-pattern">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-cyan-400/[0.06] dark:from-primary/[0.18] dark:to-cyan-400/[0.1]" />

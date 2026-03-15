@@ -15,15 +15,15 @@ import { getErrorMessage } from '../../../lib/api-error.js'
 import { Skeleton } from '../../../components/common/skeleton.jsx'
 
 const STATUS_OPTIONS = [
-  { value: 'todo', label: 'Yapilacak', tone: 'text-slate-600 dark:text-slate-300' },
-  { value: 'in_progress', label: 'Devam Ediyor', tone: 'text-blue-600 dark:text-blue-300' },
-  { value: 'done', label: 'Tamamlandi', tone: 'text-green-600 dark:text-green-300' },
+  { value: 'todo', label: 'Todo', tone: 'text-slate-600 dark:text-slate-300' },
+  { value: 'in_progress', label: 'In Progress', tone: 'text-blue-600 dark:text-blue-300' },
+  { value: 'done', label: 'Completed', tone: 'text-green-600 dark:text-green-300' },
 ]
 
 const PRIORITY_OPTIONS = [
-  { value: 'low', label: 'Dusuk', tone: 'text-slate-500 dark:text-slate-400' },
-  { value: 'medium', label: 'Orta', tone: 'text-orange-500 dark:text-orange-400' },
-  { value: 'high', label: 'Yuksek', tone: 'text-red-500 dark:text-red-400' },
+  { value: 'low', label: 'Low', tone: 'text-slate-500 dark:text-slate-400' },
+  { value: 'medium', label: 'Medium', tone: 'text-orange-500 dark:text-orange-400' },
+  { value: 'high', label: 'High', tone: 'text-red-500 dark:text-red-400' },
 ]
 
 function normalizeStatus(value) {
@@ -35,33 +35,33 @@ function normalizePriority(value) {
 }
 
 function resolveUserLabel(identity, currentUserId, currentUserEmail) {
-  if (!identity) return 'Kullanici'
+  if (!identity) return 'User'
 
   if (typeof identity === 'object') {
     if (identity.email && currentUserEmail && String(identity.email) === String(currentUserEmail)) {
-      return 'Siz'
+      return 'You'
     }
     if (identity.email) return String(identity.email)
     if (identity.id && String(identity.id) === String(currentUserId))
-      return currentUserEmail || 'Siz'
+      return currentUserEmail || 'You'
     if (identity._id && String(identity._id) === String(currentUserId))
-      return currentUserEmail || 'Siz'
+      return currentUserEmail || 'You'
     if (identity.name) return String(identity.name)
   }
 
   const raw = String(identity)
-  if (raw === String(currentUserId)) return currentUserEmail || 'Siz'
-  if (currentUserEmail && raw === String(currentUserEmail)) return 'Siz'
+  if (raw === String(currentUserId)) return currentUserEmail || 'You'
+  if (currentUserEmail && raw === String(currentUserEmail)) return 'You'
   if (raw.includes('@')) return raw
-  if (/^[a-f0-9]{24}$/i.test(raw)) return `Kullanici #${raw.slice(0, 6)}`
+  if (/^[a-f0-9]{24}$/i.test(raw)) return `User #${raw.slice(0, 6)}`
   if (raw.length <= 40) return raw
-  return 'Kullanici'
+  return 'User'
 }
 
 function shortUserLabel(label) {
   const raw = String(label || '')
-  if (!raw) return 'Kullanici'
-  if (raw === 'Siz') return raw
+  if (!raw) return 'User'
+  if (raw === 'You') return raw
   if (!raw.includes('@')) return raw
   const [name] = raw.split('@')
   return name || raw
@@ -69,7 +69,7 @@ function shortUserLabel(label) {
 
 function shortTitle(value) {
   const text = String(value || '').trim()
-  if (!text) return 'Gorev'
+  if (!text) return 'Task'
   if (text.length <= 36) return text
   return `${text.slice(0, 33)}...`
 }
@@ -104,7 +104,7 @@ function parseCommentForCards(content, activeTask) {
     }
     cards.push({
       taskId,
-      title: decodedTitle.trim() || `Gorev #${String(taskId).slice(0, 6)}`,
+      title: decodedTitle.trim() || `Task #${String(taskId).slice(0, 6)}`,
     })
     return ''
   })
@@ -113,7 +113,7 @@ function parseCommentForCards(content, activeTask) {
     const fallbackTitle = String(taskId) === String(activeTask?._id) ? activeTask?.title : null
     cards.push({
       taskId,
-      title: fallbackTitle || `Gorev #${String(taskId).slice(0, 6)}`,
+      title: fallbackTitle || `Task #${String(taskId).slice(0, 6)}`,
     })
     return ''
   })
@@ -184,7 +184,7 @@ export default function TaskDetail() {
   const assigneeLabel = resolveUserLabel(task?.assignee, currentUserId, user?.email)
   const creatorShortLabel = shortUserLabel(creatorLabel)
   const assigneeShortLabel = shortUserLabel(assigneeLabel)
-  const projectTitle = projectQuery.data?.project?.title || 'Proje'
+  const projectTitle = projectQuery.data?.project?.title || 'Project'
   const isCompleted = task?.status === 'done'
   const composerPreview = useMemo(() => parseCommentForCards(comment, task), [comment, task])
   const filteredComments = useMemo(() => {
@@ -238,24 +238,24 @@ export default function TaskDetail() {
     const nextDescription = descriptionDraft.trim()
     if (!nextTitle) {
       push({
-        title: 'Baslik zorunlu',
-        description: 'Gorev basligi bos birakilamaz.',
+        title: 'Title is required',
+        description: 'Task title cannot be empty.',
         variant: 'danger',
       })
       return
     }
     if (nextTitle.length < 3) {
       push({
-        title: 'Baslik cok kisa',
-        description: 'Gorev basligi en az 3 karakter olmali.',
+        title: 'Title is too short',
+        description: 'Task title must be at least 3 characters.',
         variant: 'danger',
       })
       return
     }
     if (nextDescription && nextDescription.length < 3) {
       push({
-        title: 'Aciklama cok kisa',
-        description: 'Aciklama girmek isterseniz en az 3 karakter olmali.',
+        title: 'Description too short',
+        description: 'If you provide a description, it must be at least 3 characters.',
         variant: 'danger',
       })
       return
@@ -267,11 +267,11 @@ export default function TaskDetail() {
         description: nextDescription,
       })
       setIsEditingTask(false)
-      push({ title: 'Gorev guncellendi', description: 'Baslik ve aciklama kaydedildi.' })
+      push({ title: 'Task updated', description: 'Title and description saved.' })
     } catch (error) {
       push({
-        title: 'Gorev guncellenemedi',
-        description: getErrorMessage(error, 'Gorev uzerinde duzenleme yetkiniz olmayabilir.'),
+        title: 'Task could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to edit this task.'),
         variant: 'danger',
       })
     }
@@ -280,16 +280,16 @@ export default function TaskDetail() {
   const submitComment = async () => {
     if (!comment.trim()) {
       push({
-        title: 'Yorum bos olamaz',
-        description: 'Lutfen en az 1 karakterlik yorum girin.',
+        title: 'Comment is required',
+        description: 'Please enter a comment with at least 1 character.',
         variant: 'danger',
       })
       return
     }
     if (comment.trim().length > 2000) {
       push({
-        title: 'Yorum cok uzun',
-        description: 'Yorum en fazla 2000 karakter olabilir.',
+        title: 'Comment is too long',
+        description: 'Comment can be at most 2000 characters.',
         variant: 'danger',
       })
       return
@@ -297,11 +297,11 @@ export default function TaskDetail() {
     try {
       await createComment.mutateAsync({ taskId: id, content: comment.trim() })
       setComment('')
-      push({ title: 'Yorum eklendi' })
+      push({ title: 'Comment added' })
     } catch (error) {
       push({
-        title: 'Yorum eklenemedi',
-        description: getErrorMessage(error, 'Bu goreve yorum ekleme yetkiniz olmayabilir.'),
+        title: 'Comment could not be added',
+        description: getErrorMessage(error, 'You may not have permission to comment on this task.'),
         variant: 'danger',
       })
     }
@@ -310,11 +310,11 @@ export default function TaskDetail() {
   const updateStatus = async (event) => {
     try {
       await updateTask.mutateAsync({ status: event.target.value })
-      push({ title: 'Durum guncellendi' })
+      push({ title: 'Status updated' })
     } catch (error) {
       push({
-        title: 'Durum guncellenemedi',
-        description: getErrorMessage(error, 'Durum guncelleme yetkiniz olmayabilir.'),
+        title: 'Status could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the status.'),
         variant: 'danger',
       })
     }
@@ -323,11 +323,11 @@ export default function TaskDetail() {
   const updatePriority = async (event) => {
     try {
       await updateTask.mutateAsync({ priority: event.target.value })
-      push({ title: 'Oncelik guncellendi' })
+      push({ title: 'Priority updated' })
     } catch (error) {
       push({
-        title: 'Oncelik guncellenemedi',
-        description: getErrorMessage(error, 'Oncelik guncelleme yetkiniz olmayabilir.'),
+        title: 'Priority could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the priority.'),
         variant: 'danger',
       })
     }
@@ -337,11 +337,11 @@ export default function TaskDetail() {
     if (!currentUserId) return
     try {
       await updateTask.mutateAsync({ assignee: isAssignedToMe ? null : currentUserId })
-      push({ title: isAssignedToMe ? 'Atama kaldirildi' : 'Gorev size atandi' })
+      push({ title: isAssignedToMe ? 'Assignment removed' : 'Task assigned to you' })
     } catch (error) {
       push({
-        title: 'Atama guncellenemedi',
-        description: getErrorMessage(error, 'Atama islemi icin yetkiniz olmayabilir.'),
+        title: 'Assignment could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the assignee.'),
         variant: 'danger',
       })
     }
@@ -351,11 +351,11 @@ export default function TaskDetail() {
     const value = event.target.value
     try {
       await updateTask.mutateAsync({ dueDate: value || null })
-      push({ title: value ? 'Son tarih guncellendi' : 'Son tarih temizlendi' })
+      push({ title: value ? 'Due date updated' : 'Due date cleared' })
     } catch (error) {
       push({
-        title: 'Son tarih guncellenemedi',
-        description: getErrorMessage(error, 'Son tarih guncelleme yetkiniz olmayabilir.'),
+        title: 'Due date could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the due date.'),
         variant: 'danger',
       })
     }
@@ -364,12 +364,12 @@ export default function TaskDetail() {
   const handleDeleteTask = async () => {
     try {
       await deleteTask.mutateAsync()
-      push({ title: 'Gorev silindi' })
+      push({ title: 'Task deleted' })
       navigate(projectId ? `/projects/${projectId}` : '/projects')
     } catch (error) {
       push({
-        title: 'Gorev silinemedi',
-        description: getErrorMessage(error, 'Bu gorevi silme yetkiniz olmayabilir.'),
+        title: 'Task could not be deleted',
+        description: getErrorMessage(error, 'You may not have permission to delete this task.'),
         variant: 'danger',
       })
     }
@@ -379,11 +379,11 @@ export default function TaskDetail() {
     const link = `${window.location.origin}/tasks/${id}`
     try {
       await navigator.clipboard.writeText(link)
-      push({ title: 'Gorev baglantisi kopyalandi' })
+      push({ title: 'Task link copied' })
     } catch (_error) {
       push({
-        title: 'Baglanti kopyalanamadi',
-        description: 'Tarayici kopyalama izni vermedi.',
+        title: 'Link could not be copied',
+        description: 'Your browser denied clipboard access.',
         variant: 'danger',
       })
     }
@@ -391,9 +391,9 @@ export default function TaskDetail() {
 
   const addShareCardToComment = () => {
     if (!task?._id) return
-    const token = `[[task:${task._id}|${encodeURIComponent(task.title || 'Gorev')}]]`
+    const token = `[[task:${task._id}|${encodeURIComponent(task.title || 'Task')}]]`
     setComment((prev) => (prev.trim() ? `${prev.trim()}\n${token}` : token))
-    push({ title: 'Paylasim karti yoruma eklendi' })
+    push({ title: 'Share card added to comment' })
   }
 
   const applyDueDatePreset = async (days) => {
@@ -403,11 +403,11 @@ export default function TaskDetail() {
     const value = base.toISOString().slice(0, 10)
     try {
       await updateTask.mutateAsync({ dueDate: value })
-      push({ title: 'Son tarih guncellendi' })
+      push({ title: 'Due date updated' })
     } catch (error) {
       push({
-        title: 'Son tarih guncellenemedi',
-        description: getErrorMessage(error, 'Son tarih guncelleme yetkiniz olmayabilir.'),
+        title: 'Due date could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the due date.'),
         variant: 'danger',
       })
     }
@@ -422,7 +422,7 @@ export default function TaskDetail() {
               className="text-[#616889] dark:text-gray-400 hover:text-primary transition-colors font-medium"
               to="/projects"
             >
-              Projeler
+              Projects
             </Link>
             <span className="text-[#616889] dark:text-gray-600">/</span>
             {projectId ? (
@@ -433,7 +433,7 @@ export default function TaskDetail() {
                 {projectTitle}
               </Link>
             ) : (
-              <span className="text-[#616889] dark:text-gray-400 font-medium">Proje</span>
+              <span className="text-[#616889] dark:text-gray-400 font-medium">Project</span>
             )}
             <span className="text-[#616889] dark:text-gray-600">/</span>
             <span className="text-[#111218] dark:text-gray-200 font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">
@@ -444,7 +444,7 @@ export default function TaskDetail() {
           <div className="flex flex-col gap-4 mb-8">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h1 className="text-[#111218] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
-                {task?.title || 'Gorev'}
+                {task?.title || 'Task'}
               </h1>
               {!isEditingTask ? (
                 <div className="flex items-center gap-2">
@@ -457,7 +457,7 @@ export default function TaskDetail() {
                       setIsEditingTask(true)
                     }}
                   >
-                    Duzenle
+                    Edit
                   </Button>
                   <Button
                     size="sm"
@@ -466,7 +466,7 @@ export default function TaskDetail() {
                     onClick={() => setDeleteModalOpen(true)}
                     disabled={deleteTask.isPending}
                   >
-                    Sil
+                    Delete
                   </Button>
                 </div>
               ) : null}
@@ -478,7 +478,7 @@ export default function TaskDetail() {
               </span>
               <span
                 className="inline-flex items-center gap-2 rounded-full border border-border-light px-2.5 py-1 text-xs dark:border-border-dark"
-                title={`Olusturan: ${creatorLabel}`}
+                title={`Created by: ${creatorLabel}`}
               >
                 <span className="inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
                   {avatarInitial(creatorShortLabel)}
@@ -493,13 +493,13 @@ export default function TaskDetail() {
               <Input
                 value={titleDraft}
                 onChange={(event) => setTitleDraft(event.target.value)}
-                placeholder="Gorev basligi"
+                placeholder="Task title"
               />
               <textarea
                 className="w-full min-h-[120px] rounded-lg border border-border-light dark:border-border-dark bg-transparent p-3 text-sm text-[#111218] dark:text-white placeholder:text-[#616889] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 resize-y"
                 value={descriptionDraft}
                 onChange={(event) => setDescriptionDraft(event.target.value)}
-                placeholder="Gorev aciklamasi"
+                placeholder="Task description"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -511,22 +511,22 @@ export default function TaskDetail() {
                     setDescriptionDraft(task?.description || '')
                   }}
                 >
-                  Iptal
+                  Cancel
                 </Button>
                 <Button size="sm" onClick={saveTaskDetails} disabled={updateTask.isPending}>
-                  {updateTask.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+                  {updateTask.isPending ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="max-w-none text-[#111218] dark:text-gray-300 text-base leading-relaxed mb-12">
-              <p className="mb-4">{task?.description || 'Henuz gorev aciklamasi girilmedi.'}</p>
+              <p className="mb-4">{task?.description || 'Henuz tasks aciklamasi girilmedi.'}</p>
             </div>
           )}
 
           <div className="border-t border-border-light dark:border-border-dark pt-8">
             <h3 className="text-lg font-bold text-[#111218] dark:text-white mb-6 flex items-center gap-2">
-              Aktivite
+              Opentivity
               <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs px-2 py-0.5 rounded-full">
                 {filteredComments.length}
               </span>
@@ -537,13 +537,13 @@ export default function TaskDetail() {
                 variant={onlyMyComments ? 'primary' : 'outline'}
                 onClick={() => setOnlyMyComments((prev) => !prev)}
               >
-                {onlyMyComments ? 'Tum yorumlar' : 'Sadece yorumlarim'}
+                {onlyMyComments ? 'All comments' : 'Only my comments'}
               </Button>
               <Button size="sm" variant="outline" onClick={copyTaskLink}>
-                Linki kopyala
+                Copy link
               </Button>
               <Button size="sm" variant="outline" onClick={addShareCardToComment}>
-                Paylasim karti ekle
+                Add share card
               </Button>
             </div>
 
@@ -559,7 +559,7 @@ export default function TaskDetail() {
               <div className="absolute left-5 top-2 bottom-6 w-px bg-border-light dark:bg-border-dark -z-10" />
 
               {filteredComments.length === 0 ? (
-                <p className="text-sm text-[#616889] dark:text-gray-500 pl-14">Henuz yorum yok.</p>
+                <p className="text-sm text-[#616889] dark:text-gray-500 pl-14">No comments yet.</p>
               ) : null}
 
               {filteredComments.map((item) => {
@@ -595,7 +595,7 @@ export default function TaskDetail() {
                                   {card.title}
                                 </span>
                                 <span className="text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
-                                  Gorev
+                                  Task
                                 </span>
                               </Link>
                             ))}
@@ -616,7 +616,7 @@ export default function TaskDetail() {
                   <div className="relative rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark shadow-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary overflow-hidden">
                     <textarea
                       className="w-full border-none bg-transparent p-3 text-sm text-[#111218] dark:text-white placeholder:text-[#616889] focus:ring-0 resize-none"
-                      placeholder="Yorum ekleyin... (Ctrl+Enter ile gonder)"
+                      placeholder="Add a comment... (Ctrl+Enter to send)"
                       rows={3}
                       value={comment}
                       onChange={(event) => setComment(event.target.value)}
@@ -649,7 +649,7 @@ export default function TaskDetail() {
                         {comment.length}/2000
                       </span>
                       <Button size="sm" onClick={submitComment} disabled={createComment.isPending}>
-                        {createComment.isPending ? 'Gonderiliyor...' : 'Yorum Yap'}
+                        {createComment.isPending ? 'Sending...' : 'Comment'}
                       </Button>
                     </div>
                   </div>
@@ -672,12 +672,12 @@ export default function TaskDetail() {
                 disabled={updateTask.isPending}
               >
                 <span className="material-symbols-outlined text-[18px]">check</span>
-                Tamamla
+                Complete
               </Button>
             ) : null}
             <Button className="flex-1" variant="outline" size="sm" onClick={copyTaskLink}>
               <span className="material-symbols-outlined text-[18px]">share</span>
-              Paylas
+              Share
             </Button>
             <Button
               className="flex-1"
@@ -687,7 +687,7 @@ export default function TaskDetail() {
               disabled={deleteTask.isPending}
             >
               <span className="material-symbols-outlined text-[18px]">delete</span>
-              Sil
+              Delete
             </Button>
           </div>
 
@@ -696,12 +696,12 @@ export default function TaskDetail() {
           <div className="flex flex-col gap-5">
             <div className="group">
               <label className="block text-xs font-medium text-[#616889] dark:text-gray-500 mb-1.5 uppercase tracking-wider">
-                Durum
+                Status
               </label>
               <div className="flex w-full items-center justify-between gap-2 text-sm text-[#111218] dark:text-gray-200 p-1.5 -ml-1.5 rounded-md">
                 <span
                   className="material-symbols-outlined text-blue-500 icon-fill text-[18px]"
-                  title={`Durum: ${status.label}`}
+                  title={`Status: ${status.label}`}
                 >
                   radio_button_checked
                 </span>
@@ -722,7 +722,7 @@ export default function TaskDetail() {
 
             <div className="group">
               <label className="block text-xs font-medium text-[#616889] dark:text-gray-500 mb-1.5 uppercase tracking-wider">
-                Atanan
+                Assignee
               </label>
               <button
                 className="flex w-full items-center justify-between gap-2 text-sm text-[#111218] dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 p-1.5 -ml-1.5 rounded-md transition-colors text-left"
@@ -735,10 +735,10 @@ export default function TaskDetail() {
                   </div>
                   <span>
                     {isAssignedToMe
-                      ? 'Bana atandi'
+                      ? 'Assigned to me'
                       : hasAssignee
-                        ? `${assigneeShortLabel} atandi`
-                        : 'Atanmamis'}
+                        ? `${assigneeShortLabel} assigned`
+                        : 'Unassigned'}
                   </span>
                 </div>
                 <span className="material-symbols-outlined text-gray-400 text-[16px]">sync</span>
@@ -747,12 +747,12 @@ export default function TaskDetail() {
 
             <div className="group">
               <label className="block text-xs font-medium text-[#616889] dark:text-gray-500 mb-1.5 uppercase tracking-wider">
-                Oncelik
+                Priority
               </label>
               <div className="flex w-full items-center justify-between gap-2 text-sm text-[#111218] dark:text-gray-200 p-1.5 -ml-1.5 rounded-md">
                 <span
                   className="material-symbols-outlined text-orange-500 icon-fill text-[18px]"
-                  title={`Oncelik: ${priority.label}`}
+                  title={`Priority: ${priority.label}`}
                 >
                   signal_cellular_alt
                 </span>
@@ -773,7 +773,7 @@ export default function TaskDetail() {
 
             <div className="group">
               <label className="block text-xs font-medium text-[#616889] dark:text-gray-500 mb-1.5 uppercase tracking-wider">
-                Son Tarih
+                Due Date
               </label>
               <div className="flex w-full items-center justify-between gap-2 text-sm text-[#111218] dark:text-gray-200 p-1.5 -ml-1.5 rounded-md">
                 <div className="flex items-center gap-2">
@@ -792,13 +792,13 @@ export default function TaskDetail() {
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <Button size="sm" variant="outline" onClick={() => applyDueDatePreset(0)}>
-                  Bugun
+                  Today
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => applyDueDatePreset(1)}>
-                  Yarin
+                  Tomorrow
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => applyDueDatePreset(7)}>
-                  +7 gun
+                  +7 days
                 </Button>
               </div>
             </div>
@@ -807,11 +807,11 @@ export default function TaskDetail() {
           <div className="h-px bg-border-light dark:bg-border-dark mt-2" />
           <div className="flex flex-col gap-2 text-xs text-[#616889] dark:text-gray-500">
             <div className="flex justify-between">
-              <span>Olusturuldu</span>
+              <span>Created</span>
               <span>{createdAtLabel}</span>
             </div>
             <div className="flex justify-between">
-              <span>Guncellendi</span>
+              <span>Updated</span>
               <span>{updatedAtLabel}</span>
             </div>
           </div>
@@ -821,12 +821,12 @@ export default function TaskDetail() {
       <Modal
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
-        title="Gorevi sil"
-        description={`"${task?.title || 'Gorev'}" kalici olarak silinecek. Bu islem geri alinmaz.`}
+        title="Delete task"
+        description={`"${task?.title || 'Task'}" will be permanently deleted. This action cannot be undone.`}
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setDeleteModalOpen(false)}>
-              Vazgec
+              Cancel
             </Button>
             <Button
               size="sm"
@@ -834,7 +834,7 @@ export default function TaskDetail() {
               onClick={handleDeleteTask}
               disabled={deleteTask.isPending}
             >
-              {deleteTask.isPending ? 'Siliniyor...' : 'Sil'}
+              {deleteTask.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </>
         }

@@ -17,7 +17,7 @@ export async function requestOtp(email) {
     body: JSON.stringify({ email }),
   })
   if (!res.ok) {
-    const parsed = await parseApiError(res, 'OTP kodu gonderilemedi.')
+    const parsed = await parseApiError(res, 'OTP could not be sent.')
     const err = new Error(parsed.message)
     err.status = parsed.status
     err.retryAfterSec = parsed.retryAfterSec
@@ -33,7 +33,7 @@ export async function verifyOtp(email, otp) {
     body: JSON.stringify({ email, otp }),
   })
   if (!res.ok) {
-    const parsed = await parseApiError(res, 'OTP kodu dogrulanamadi.')
+    const parsed = await parseApiError(res, 'OTP could not be verified.')
     const err = new Error(parsed.message)
     err.status = parsed.status
     err.retryAfterSec = parsed.retryAfterSec

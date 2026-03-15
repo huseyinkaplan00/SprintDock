@@ -7,17 +7,17 @@ import { createComment, listCommentsByTask, findCommentById, deleteComment } fro
 
 function ensureObjectId(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw httpError(400, 'Gecersiz kimlik')
+    throw httpError(400, 'Invalid identifier')
   }
 }
 
 async function ensureTaskMember(taskId, userId) {
   const task = await findTaskById(taskId)
-  if (!task) throw httpError(404, 'Gorev bulunamadi')
+  if (!task) throw httpError(404, 'Task not found')
   const project = await findProjectById(task.projectId)
-  if (!project) throw httpError(404, 'Proje bulunamadi')
+  if (!project) throw httpError(404, 'Project not found')
   const isMember = project.members.some((m) => String(m) === String(userId))
-  if (!isMember) throw httpError(403, 'Yasak')
+  if (!isMember) throw httpError(403, 'Forbidden')
   return { task, project }
 }
 
@@ -50,12 +50,12 @@ export async function listCommentsService({ userId, taskId }) {
 export async function deleteCommentService({ userId, commentId }) {
   ensureObjectId(commentId)
   const comment = await findCommentById(commentId)
-  if (!comment) throw httpError(404, 'Yorum bulunamadi')
+  if (!comment) throw httpError(404, 'Comment not found')
 
   const { project } = await ensureTaskMember(comment.taskId, userId)
   const isOwner = String(comment.author) === String(userId)
   if (!isOwner && String(project.owner) !== String(userId)) {
-    throw httpError(403, 'Yasak')
+    throw httpError(403, 'Forbidden')
   }
 
   await deleteComment(commentId)

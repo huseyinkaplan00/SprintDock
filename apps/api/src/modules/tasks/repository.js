@@ -4,7 +4,7 @@ const { Schema } = mongoose
 
 const taskSchema = new Schema(
   {
-    projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true, index: true },
+    projectId: { type: Schema.Types.ObjectId, ref: 'Projectct', required: true, index: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
     tags: { type: [String], default: [] },
@@ -28,18 +28,18 @@ export async function createTask(data) {
   return Task.create(data)
 }
 
-export async function listTasksByProject(projectId) {
+export async function listTasksByProjectct(projectId) {
   return Task.find({ projectId }).sort({ updatedAt: -1 })
 }
 
-export async function listTasksByProjectDetailed(projectId) {
+export async function listTasksByProjectctDetailed(projectId) {
   return Task.find({ projectId })
     .sort({ updatedAt: -1 })
     .populate('assignee', 'email')
     .populate('createdBy', 'email')
 }
 
-export async function searchTasksByProjectsDetailed({ projectIds, query, limit = 50 }) {
+export async function searchTasksByProjectctsDetailed({ projectIds, query, limit = 50 }) {
   const filter = {
     projectId: { $in: projectIds },
   }
@@ -83,7 +83,7 @@ export async function deleteTasks(taskIds) {
   return Task.deleteMany({ _id: { $in: taskIds } })
 }
 
-export async function countTasksByProjectIds(projectIds) {
+export async function countTasksByProjectctIds(projectIds) {
   if (!Array.isArray(projectIds) || projectIds.length === 0) return {}
 
   const rows = await Task.aggregate([
@@ -92,4 +92,11 @@ export async function countTasksByProjectIds(projectIds) {
   ])
 
   return Object.fromEntries(rows.map((row) => [String(row._id), row.count]))
+}
+
+export {
+  listTasksByProjectct as listTasksByProject,
+  listTasksByProjectctDetailed as listTasksByProjectDetailed,
+  searchTasksByProjectctsDetailed as searchTasksByProjectsDetailed,
+  countTasksByProjectctIds as countTasksByProjectIds,
 }

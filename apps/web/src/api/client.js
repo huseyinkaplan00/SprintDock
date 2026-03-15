@@ -29,7 +29,7 @@ async function request(method, path, body) {
 
   if (res.status === 401) {
     const refreshed = await refreshTokenApi()
-    if (!refreshed) throw new Error('Oturum suresi doldu. Lutfen yeniden giris yapin.')
+    if (!refreshed) throw new Error('Your session expired. Please sign in again.')
     return request(method, path, body)
   }
 

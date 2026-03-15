@@ -17,39 +17,39 @@ import { getErrorMessage } from '../../../lib/api-error.js'
 import { Skeleton } from '../../../components/common/skeleton.jsx'
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'Tum durumlar', icon: 'apps' },
-  { value: 'todo', label: 'Yapilacak', icon: 'radio_button_unchecked' },
-  { value: 'in_progress', label: 'Devam ediyor', icon: 'timelapse' },
-  { value: 'done', label: 'Tamamlandi', icon: 'check_circle' },
+  { value: 'all', label: 'All statuses', icon: 'apps' },
+  { value: 'todo', label: 'Todo', icon: 'radio_button_unchecked' },
+  { value: 'in_progress', label: 'In progress', icon: 'timelapse' },
+  { value: 'done', label: 'Completed', icon: 'check_circle' },
 ]
 
 const ASSIGNEE_OPTIONS = [
-  { value: 'all', label: 'Tum atananlar' },
-  { value: 'me', label: 'Bana atananlar' },
-  { value: 'unassigned', label: 'Atanmamis' },
+  { value: 'all', label: 'All assignees' },
+  { value: 'me', label: 'Assigned to me' },
+  { value: 'unassigned', label: 'Unassigned' },
 ]
 
 const PRIORITY_META = {
-  low: { label: 'Dusuk', icon: 'south', tone: 'text-slate-500' },
-  medium: { label: 'Orta', icon: 'remove', tone: 'text-amber-500' },
-  high: { label: 'Yuksek', icon: 'priority_high', tone: 'text-red-500' },
+  low: { label: 'Low', icon: 'south', tone: 'text-slate-500' },
+  medium: { label: 'Medium', icon: 'remove', tone: 'text-amber-500' },
+  high: { label: 'High', icon: 'priority_high', tone: 'text-red-500' },
 }
 
 const TASK_STATUS_META = {
   todo: {
-    label: 'Yapilacak',
+    label: 'Todo',
     icon: 'radio_button_unchecked',
     tone: 'text-slate-500',
     bg: 'bg-slate-100 dark:bg-slate-800/60',
   },
   in_progress: {
-    label: 'Devam ediyor',
+    label: 'In progress',
     icon: 'timelapse',
     tone: 'text-blue-500',
     bg: 'bg-blue-50 dark:bg-blue-900/25',
   },
   done: {
-    label: 'Tamamlandi',
+    label: 'Completed',
     icon: 'check_circle',
     tone: 'text-emerald-500',
     bg: 'bg-emerald-50 dark:bg-emerald-900/25',
@@ -68,20 +68,20 @@ const PROJECT_ICON_OPTIONS = [
 ]
 
 function resolveAssigneeLabel(identity, currentUserId, currentUserEmail) {
-  if (!identity) return 'Atanmamis'
+  if (!identity) return 'Unassigned'
 
   if (typeof identity === 'object') {
     if (identity.email) return String(identity.email)
     if (identity.name) return String(identity.name)
     const objectId = String(identity._id || identity.id || '')
-    if (objectId && objectId === String(currentUserId)) return currentUserEmail || 'Siz'
-    if (objectId) return `Kullanici #${objectId.slice(0, 6)}`
+    if (objectId && objectId === String(currentUserId)) return currentUserEmail || 'You'
+    if (objectId) return `User #${objectId.slice(0, 6)}`
   }
 
   const raw = String(identity)
-  if (raw === String(currentUserId)) return currentUserEmail || 'Siz'
+  if (raw === String(currentUserId)) return currentUserEmail || 'You'
   if (raw.includes('@')) return raw
-  if (/^[a-f0-9]{24}$/i.test(raw)) return `Kullanici #${raw.slice(0, 6)}`
+  if (/^[a-f0-9]{24}$/i.test(raw)) return `User #${raw.slice(0, 6)}`
   return raw
 }
 
@@ -96,11 +96,11 @@ function resolveUserDisplay(identity, currentUserId, currentUserEmail) {
   if (typeof identity === 'object') {
     if (identity.email) return String(identity.email)
     const id = String(identity._id || identity.id || '')
-    if (id && id === String(currentUserId)) return currentUserEmail || 'Siz'
+    if (id && id === String(currentUserId)) return currentUserEmail || 'You'
     return id ? `${id.slice(0, 8)}...` : '-'
   }
   const raw = String(identity)
-  if (raw === String(currentUserId)) return currentUserEmail || 'Siz'
+  if (raw === String(currentUserId)) return currentUserEmail || 'You'
   if (raw.includes('@')) return raw
   return raw.length > 8 ? `${raw.slice(0, 8)}...` : raw
 }
@@ -122,15 +122,15 @@ function avatarInitial(value) {
 }
 
 const COLUMN_META = {
-  title: { label: 'Baslik', icon: 'title' },
-  tags: { label: 'Etiketler', icon: 'sell' },
-  status: { label: 'Durum', icon: 'radio_button_checked' },
-  assignee: { label: 'Atanan', icon: 'person' },
-  priority: { label: 'Oncelik', icon: 'priority_high' },
-  dueDate: { label: 'Son Tarih', icon: 'calendar_today' },
-  updatedAt: { label: 'Guncellendi', icon: 'update' },
-  createdBy: { label: 'Olusturan', icon: 'edit_note' },
-  createdAt: { label: 'Olusturulma', icon: 'history' },
+  title: { label: 'Title', icon: 'title' },
+  tags: { label: 'Tags', icon: 'sell' },
+  status: { label: 'Status', icon: 'radio_button_checked' },
+  assignee: { label: 'Assignee', icon: 'person' },
+  priority: { label: 'Priority', icon: 'priority_high' },
+  dueDate: { label: 'Due Date', icon: 'calendar_today' },
+  updatedAt: { label: 'Updated', icon: 'update' },
+  createdBy: { label: 'Created by', icon: 'edit_note' },
+  createdAt: { label: 'Created', icon: 'history' },
 }
 
 export default function ProjectDetail() {
@@ -234,8 +234,8 @@ export default function ProjectDetail() {
         return true
       } catch (error) {
         push({
-          title: 'Gorev guncellenemedi',
-          description: getErrorMessage(error, 'Gorev guncelleme yetkiniz olmayabilir.'),
+          title: 'Task could not be updated',
+          description: getErrorMessage(error, 'You may not have permission to update this task.'),
           variant: 'danger',
         })
         return false
@@ -252,8 +252,8 @@ export default function ProjectDetail() {
 
     if (!cleanTitle) {
       push({
-        title: 'Gorev basligi zorunlu',
-        description: 'Lutfen gorev icin en az 1 karakterlik bir baslik girin.',
+        title: 'Task title is required',
+        description: 'Please enter a title with at least 1 character.',
         variant: 'danger',
       })
       return
@@ -261,8 +261,8 @@ export default function ProjectDetail() {
 
     if (cleanTitle.length < 3) {
       push({
-        title: 'Baslik cok kisa',
-        description: 'Gorev basligi en az 3 karakter olmali.',
+        title: 'Title is too short',
+        description: 'Task title must be at least 3 characters.',
         variant: 'danger',
       })
       return
@@ -270,8 +270,8 @@ export default function ProjectDetail() {
 
     if (cleanDescription && cleanDescription.length < 3) {
       push({
-        title: 'Aciklama cok kisa',
-        description: 'Aciklama girmek isterseniz en az 3 karakter olmali.',
+        title: 'Description too short',
+        description: 'If you provide a description, it must be at least 3 characters.',
         variant: 'danger',
       })
       return
@@ -279,8 +279,8 @@ export default function ProjectDetail() {
 
     if (parsedTags.length > 10) {
       push({
-        title: 'Etiket sayisi fazla',
-        description: 'En fazla 10 etiket ekleyebilirsiniz.',
+        title: 'Too many tags',
+        description: 'You can add at most 10 tags.',
         variant: 'danger',
       })
       return
@@ -295,11 +295,14 @@ export default function ProjectDetail() {
         priority,
         dueDate: dueDate || undefined,
       })
-      push({ title: 'Gorev olusturuldu' })
+      push({ title: 'Task created' })
     } catch (error) {
       push({
-        title: 'Gorev olusturulamadi',
-        description: getErrorMessage(error, 'Bu projede gorev olusturma yetkiniz olmayabilir.'),
+        title: 'Task could not be created',
+        description: getErrorMessage(
+          error,
+          'You may not have permission to create a task in this project.'
+        ),
         variant: 'danger',
       })
     }
@@ -314,7 +317,7 @@ export default function ProjectDetail() {
         task._id,
         { assignee: assignedToMe ? myId : null },
         {
-          successTitle: assignedToMe ? 'Gorev size atandi' : 'Atama kaldirildi',
+          successTitle: assignedToMe ? 'Task assigned to you' : 'Assignment removed',
         }
       )
     },
@@ -328,14 +331,14 @@ export default function ProjectDetail() {
       await deleteProject.mutateAsync(project._id)
       setDeleteModalOpen(false)
       push({
-        title: 'Proje silindi',
-        description: 'Proje listesine yonlendiriliyorsunuz.',
+        title: 'Project deleted',
+        description: 'Redirecting you to the projects list.',
       })
       navigate('/projects')
     } catch (error) {
       push({
-        title: 'Proje silinemedi',
-        description: getErrorMessage(error, 'Bu projeyi silme yetkiniz olmayabilir.'),
+        title: 'Project could not be deleted',
+        description: getErrorMessage(error, 'You may not have permission to delete this project.'),
         variant: 'danger',
       })
     }
@@ -346,14 +349,14 @@ export default function ProjectDetail() {
     try {
       await deleteTask.mutateAsync(taskToDelete._id)
       push({
-        title: 'Gorev silindi',
-        description: `"${taskToDelete.title || 'Gorev'}" listeden kaldirildi.`,
+        title: 'Task deleted',
+        description: `"${taskToDelete.title || 'Task'}" removed from the list.`,
       })
       setTaskToDelete(null)
     } catch (error) {
       push({
-        title: 'Gorev silinemedi',
-        description: getErrorMessage(error, 'Bu gorevi silme yetkiniz olmayabilir.'),
+        title: 'Task could not be deleted',
+        description: getErrorMessage(error, 'You may not have permission to delete this task.'),
         variant: 'danger',
       })
     }
@@ -364,11 +367,11 @@ export default function ProjectDetail() {
     const status = event.target.value
     try {
       await updateProject.mutateAsync({ projectId: project._id, payload: { status } })
-      push({ title: 'Proje durumu guncellendi' })
+      push({ title: 'Project status updated' })
     } catch (error) {
       push({
-        title: 'Proje durumu guncellenemedi',
-        description: getErrorMessage(error, 'Durum guncelleme yetkiniz olmayabilir.'),
+        title: 'Project status could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the status.'),
         variant: 'danger',
       })
     }
@@ -380,11 +383,11 @@ export default function ProjectDetail() {
     if (!icon) return
     try {
       await updateProject.mutateAsync({ projectId: project._id, payload: { icon } })
-      push({ title: 'Proje ikonu guncellendi' })
+      push({ title: 'Project icon updated' })
     } catch (error) {
       push({
-        title: 'Proje ikonu guncellenemedi',
-        description: getErrorMessage(error, 'Ikon guncelleme yetkiniz olmayabilir.'),
+        title: 'Project icon could not be updated',
+        description: getErrorMessage(error, 'You may not have permission to update the icon.'),
         variant: 'danger',
       })
     }
@@ -453,14 +456,14 @@ export default function ProjectDetail() {
     try {
       await bulkDeleteTasks.mutateAsync(selectedTaskIds)
       push({
-        title: 'Toplu silme tamamlandi',
-        description: `${selectedTaskIds.length} gorev silindi.`,
+        title: 'Bulk deleteme tamamlandi',
+        description: `${selectedTaskIds.length} tasks deleted.`,
       })
       setBulkDeleteOpen(false)
     } catch (error) {
       push({
-        title: 'Toplu silme basarisiz',
-        description: getErrorMessage(error, 'Secilen gorevlerden bazilari silinemedi.'),
+        title: 'Bulk deleteme basarisiz',
+        description: getErrorMessage(error, 'Some selected tasks could not be deleted.'),
         variant: 'danger',
       })
     }
@@ -473,7 +476,7 @@ export default function ProjectDetail() {
         header: ({ table }) => (
           <input
             type="checkbox"
-            aria-label="Tum gorevleri sec"
+            aria-label="Select all tasks"
             className="h-4 w-4 rounded border-border-light dark:border-border-dark"
             checked={table.getIsAllPageRowsSelected()}
             onChange={table.getToggleAllPageRowsSelectedHandler()}
@@ -485,7 +488,7 @@ export default function ProjectDetail() {
         cell: ({ row }) => (
           <input
             type="checkbox"
-            aria-label="Gorevi sec"
+            aria-label="Select task"
             className="h-4 w-4 rounded border-border-light dark:border-border-dark"
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
@@ -501,7 +504,7 @@ export default function ProjectDetail() {
       },
       {
         id: 'title',
-        header: 'Gorev Basligi',
+        header: 'Task Title',
         accessorFn: (row) => row.title,
         cell: ({ row }) => {
           const task = row.original
@@ -518,8 +521,8 @@ export default function ProjectDetail() {
                     await applyTaskUpdate(task._id, { title: next })
                   } else if (!next) {
                     push({
-                      title: 'Baslik bos olamaz',
-                      description: 'Gorev basligi en az 1 karakter olmali.',
+                      title: 'Title cannot be empty',
+                      description: 'Task title must be at least 1 character.',
                       variant: 'danger',
                     })
                   }
@@ -558,7 +561,7 @@ export default function ProjectDetail() {
       },
       {
         id: 'tags',
-        header: 'Etiketler',
+        header: 'Tags',
         accessorFn: (row) => (Array.isArray(row.tags) ? row.tags.join(', ') : ''),
         cell: ({ row }) => {
           const tags = Array.isArray(row.original.tags) ? row.original.tags : []
@@ -579,7 +582,7 @@ export default function ProjectDetail() {
       },
       {
         id: 'status',
-        header: 'Durum',
+        header: 'Status',
         accessorFn: (row) => row.status,
         cell: ({ row }) => {
           const meta = TASK_STATUS_META[row.original.status] || TASK_STATUS_META.todo
@@ -589,7 +592,7 @@ export default function ProjectDetail() {
                 <button
                   className={`inline-flex size-8 items-center justify-center rounded-full border border-border-light ${meta.bg} ${meta.tone} dark:border-border-dark`}
                   data-row-click-stop="true"
-                  title={`Durum: ${meta.label}`}
+                  title={`Status: ${meta.label}`}
                 >
                   <span className="material-symbols-outlined text-[16px]">{meta.icon}</span>
                 </button>
@@ -612,7 +615,7 @@ export default function ProjectDetail() {
       },
       {
         id: 'assignee',
-        header: 'Atanan',
+        header: 'Assignee',
         accessorFn: (row) => resolveAssigneeId(row.assignee),
         cell: ({ row }) => {
           const assigneeRaw = resolveAssigneeId(row.original.assignee)
@@ -620,7 +623,7 @@ export default function ProjectDetail() {
           const initial = (label || 'K').slice(0, 1).toUpperCase()
           return (
             <div className="flex items-center gap-2">
-              <HoverTooltip content={`Atanan: ${label}`}>
+              <HoverTooltip content={`Assignee: ${label}`}>
                 <span className="inline-flex size-7 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
                   {initial}
                 </span>
@@ -633,10 +636,10 @@ export default function ProjectDetail() {
                 <HoverTooltip
                   content={
                     assigneeRaw === myId
-                      ? 'Atamayi kaldir'
+                      ? 'Remove assignment'
                       : assigneeRaw
-                        ? 'Gorevi uzerine al'
-                        : 'Kendine ata'
+                        ? 'Assign task to yourself'
+                        : 'Assign to yourself'
                   }
                 >
                   <span className="material-symbols-outlined text-[15px]">
@@ -650,12 +653,12 @@ export default function ProjectDetail() {
       },
       {
         id: 'priority',
-        header: 'Oncelik',
+        header: 'Priority',
         accessorFn: (row) => row.priority || 'medium',
         cell: ({ row }) => {
           const meta = PRIORITY_META[row.original.priority || 'medium'] || PRIORITY_META.medium
           return (
-            <HoverTooltip content={`Oncelik: ${meta.label}`}>
+            <HoverTooltip content={`Priority: ${meta.label}`}>
               <span className="inline-flex size-8 items-center justify-center rounded-full border border-border-light bg-white dark:border-border-dark dark:bg-surface-dark">
                 <span className={`material-symbols-outlined text-[14px] ${meta.tone}`}>
                   {meta.icon}
@@ -667,27 +670,27 @@ export default function ProjectDetail() {
       },
       {
         id: 'dueDate',
-        header: 'Son Tarih',
+        header: 'Due Date',
         accessorFn: (row) => formatDate(row.dueDate),
       },
       {
         id: 'updatedAt',
-        header: 'Guncellendi',
+        header: 'Updated',
         accessorFn: (row) => formatDate(row.updatedAt),
       },
       {
         id: 'createdBy',
-        header: 'Olusturan',
+        header: 'Created by',
         accessorFn: (row) => resolveUserDisplay(row.createdBy, myId, user?.email),
       },
       {
         id: 'createdAt',
-        header: 'Olusturulma',
+        header: 'Created',
         accessorFn: (row) => formatDate(row.createdAt),
       },
       {
         id: 'actions',
-        header: 'Aksiyonlar',
+        header: 'Actions',
         accessorFn: (row) => row._id,
         enableSorting: false,
         cell: ({ row }) => {
@@ -702,7 +705,7 @@ export default function ProjectDetail() {
               }
             >
               <DropdownItem onSelect={() => navigate(`/tasks/${task._id}`)}>
-                Detaya git
+                Open details
               </DropdownItem>
               <DropdownItem
                 onSelect={() => {
@@ -716,7 +719,7 @@ export default function ProjectDetail() {
                 className="text-red-600 dark:text-red-300"
                 onSelect={() => setTaskToDelete(task)}
               >
-                Gorevi sil
+                Delete task
               </DropdownItem>
             </Dropdown>
           )
@@ -751,13 +754,13 @@ export default function ProjectDetail() {
                   onClick={() => navigate('/projects')}
                 >
                   <span className="material-symbols-outlined text-lg">{projectIcon}</span>
-                  Projeler
+                  Projects
                 </button>
                 <span className="text-[#616889] dark:text-gray-500 text-sm font-medium leading-normal">
                   /
                 </span>
                 <span className="text-[#111218] dark:text-white text-sm font-medium leading-normal">
-                  {project?.title || 'Proje'}
+                  {project?.title || 'Project'}
                 </span>
               </div>
 
@@ -769,7 +772,7 @@ export default function ProjectDetail() {
                         <span className="material-symbols-outlined text-[20px]">{projectIcon}</span>
                       </span>
                       <h1 className="text-3xl font-black leading-tight tracking-tight text-[#111218] dark:text-white">
-                        {project?.title || 'Proje'}
+                        {project?.title || 'Project'}
                       </h1>
                       <select
                         className="h-8 rounded-full border border-blue-200 bg-blue-50 px-3 pr-8 text-xs font-bold uppercase tracking-[0.015em] text-primary dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
@@ -786,7 +789,7 @@ export default function ProjectDetail() {
                             size="sm"
                             variant="outline"
                             className="h-8 rounded-full px-2"
-                            title="Proje ikonunu degistir"
+                            title="Change project icon"
                           >
                             <span className="material-symbols-outlined text-[16px]">
                               {projectIcon}
@@ -819,7 +822,7 @@ export default function ProjectDetail() {
                       </Dropdown>
                     </div>
                     <p className="max-w-3xl text-sm leading-6 text-[#616889] dark:text-gray-400">
-                      {project?.description || 'Henuz proje aciklamasi yok.'}
+                      {project?.description || 'No project description yet.'}
                     </p>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-[#616889] dark:text-gray-400">
                       <span className="inline-flex items-center gap-2 rounded-full border border-border-light px-2.5 py-1 dark:border-border-dark">
@@ -829,10 +832,10 @@ export default function ProjectDetail() {
                         >
                           {avatarInitial(ownerLabel)}
                         </span>
-                        <span className="max-w-[160px] truncate">Sahip</span>
+                        <span className="max-w-[160px] truncate">Owner</span>
                       </span>
                       <span className="inline-flex items-center rounded-full border border-border-light px-2.5 py-1 dark:border-border-dark">
-                        <span className="mr-1">Uyeler</span>
+                        <span className="mr-1">Memberler</span>
                         <span className="flex items-center">
                           {memberLabels.slice(0, 3).map((memberLabel, index) => (
                             <span
@@ -866,7 +869,7 @@ export default function ProjectDetail() {
                   <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
                     <Button size="sm" onClick={() => setCreateTaskModalOpen(true)}>
                       <span className="material-symbols-outlined text-[18px]">add</span>
-                      Yeni Gorev
+                      New Task
                     </Button>
                     <Button
                       size="sm"
@@ -875,7 +878,7 @@ export default function ProjectDetail() {
                       disabled={deleteProject.isPending}
                     >
                       <span className="material-symbols-outlined text-[16px]">delete</span>
-                      {deleteProject.isPending ? 'Siliniyor...' : 'Projeyi Sil'}
+                      {deleteProject.isPending ? 'Deleting...' : 'Delete project'}
                     </Button>
                   </div>
                 </div>
@@ -886,9 +889,7 @@ export default function ProjectDetail() {
                   <div className="flex gap-6 overflow-x-auto no-scrollbar">
                     <span className="flex items-center gap-2 border-b-[3px] border-b-primary text-[#111218] dark:text-white pb-3 pt-2 whitespace-nowrap">
                       <span className="material-symbols-outlined text-[20px]">list_alt</span>
-                      <p className="text-sm font-bold leading-normal tracking-[0.015em]">
-                        Gorevler
-                      </p>
+                      <p className="text-sm font-bold leading-normal tracking-[0.015em]">Tasks</p>
                       <span className="bg-gray-100 dark:bg-gray-800 text-xs font-medium px-2 py-0.5 rounded-full ml-1">
                         {visibleTasks.length}
                       </span>
@@ -909,23 +910,23 @@ export default function ProjectDetail() {
                     <span className="material-symbols-outlined text-[14px] text-slate-500">
                       radio_button_unchecked
                     </span>
-                    Yapilacak <b>{taskMetrics.todo}</b>
+                    To do <b>{taskMetrics.todo}</b>
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-white/80 px-2.5 py-1 dark:border-border-dark dark:bg-white/5">
                     <span className="material-symbols-outlined text-[14px] text-blue-500">
                       timelapse
                     </span>
-                    Devam ediyor <b>{taskMetrics.in_progress}</b>
+                    In progress <b>{taskMetrics.in_progress}</b>
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border-light bg-white/80 px-2.5 py-1 dark:border-border-dark dark:bg-white/5">
                     <span className="material-symbols-outlined text-[14px] text-emerald-500">
                       check_circle
                     </span>
-                    Tamamlandi <b>{taskMetrics.done}</b>
+                    Completed <b>{taskMetrics.done}</b>
                   </span>
                   {hasActiveFilters ? (
                     <span className="text-slate-500 dark:text-slate-400">
-                      Filtre sonucu: {visibleTasks.length} gorev
+                      Filtered result: {visibleTasks.length} tasks
                     </span>
                   ) : null}
                 </div>
@@ -933,7 +934,7 @@ export default function ProjectDetail() {
                   columns={columns}
                   data={visibleTasks}
                   loading={tasksQuery.isLoading}
-                  initialPageSize={8}
+                  initialPageYoue={8}
                   initialColumnVisibility={{
                     id: false,
                     createdBy: false,
@@ -944,7 +945,7 @@ export default function ProjectDetail() {
                   rowSelection={rowSelection}
                   onRowSelectionChange={setRowSelection}
                   onRowClick={(task) => navigate(`/tasks/${task._id}`)}
-                  emptyText={tasksQuery.isLoading ? 'Gorevler yukleniyor...' : 'Henuz gorev yok.'}
+                  emptyText={tasksQuery.isLoading ? 'Tasks yukleniyor...' : 'No tasks yet.'}
                   renderToolbar={({ table }) => (
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-2">
@@ -954,7 +955,7 @@ export default function ProjectDetail() {
                           </span>
                           <Input
                             className="h-9 pl-9 max-w-[260px]"
-                            placeholder="Gorev ara..."
+                            placeholder="Search tasks..."
                             value={searchFilter}
                             onChange={(event) => setSearchFilter(event.target.value)}
                           />
@@ -1016,7 +1017,7 @@ export default function ProjectDetail() {
 
                         <Input
                           className="h-9 w-[200px]"
-                          placeholder="Etikete gore filtrele..."
+                          placeholder="Filter by tag..."
                           value={tagFilter}
                           onChange={(event) => setTagFilter(event.target.value)}
                         />
@@ -1033,7 +1034,7 @@ export default function ProjectDetail() {
                               setTagFilter('')
                             }}
                           >
-                            Temizle
+                            Clear
                           </Button>
                         ) : null}
                       </div>
@@ -1041,7 +1042,7 @@ export default function ProjectDetail() {
                         trigger={
                           <Button size="sm" variant="outline" className="gap-1">
                             <span className="material-symbols-outlined text-[16px]">tune</span>
-                            Gorunum
+                            View
                           </Button>
                         }
                       >
@@ -1057,7 +1058,7 @@ export default function ProjectDetail() {
                                 {COLUMN_META[column.id]?.icon || 'view_column'}
                               </span>
                               <span className="flex-1">
-                                {column.getIsVisible() ? 'Gizle' : 'Goster'}{' '}
+                                {column.getIsVisible() ? 'Hide' : 'Show'}{' '}
                                 {COLUMN_META[column.id]?.label || column.id}
                               </span>
                               {column.getIsVisible() ? (
@@ -1073,7 +1074,7 @@ export default function ProjectDetail() {
                           <span className="material-symbols-outlined mr-2 text-[16px] text-slate-400">
                             tag
                           </span>
-                          <span className="flex-1">ID kolonunu goster</span>
+                          <span className="flex-1">Show ID column</span>
                         </DropdownItem>
                       </Dropdown>
                       {selectedTaskIds.length > 0 ? (
@@ -1083,7 +1084,7 @@ export default function ProjectDetail() {
                           onClick={() => setBulkDeleteOpen(true)}
                           data-row-click-stop="true"
                         >
-                          Secilenleri sil ({selectedTaskIds.length})
+                          Delete selected ({selectedTaskIds.length})
                         </Button>
                       ) : null}
                     </div>
@@ -1098,15 +1099,15 @@ export default function ProjectDetail() {
       <Modal
         open={createTaskModalOpen}
         onOpenChange={setCreateTaskModalOpen}
-        title="Yeni Gorev Olustur"
-        description="Bu proje icin yeni bir gorev ekleyin."
+        title="Create New Task"
+        description="Bu proje icin yeni bir tasks ekleyin."
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setCreateTaskModalOpen(false)}>
-              Vazgec
+              Cancel
             </Button>
             <Button size="sm" type="submit" form="create-task-form" disabled={createTask.isPending}>
-              {createTask.isPending ? 'Olusturuluyor...' : 'Gorev Olustur'}
+              {createTask.isPending ? 'Creating...' : 'Create Task'}
             </Button>
           </>
         }
@@ -1114,22 +1115,22 @@ export default function ProjectDetail() {
         <form className="space-y-4" id="create-task-form" onSubmit={submitCreateTask}>
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Gorev Basligi
+              Task Title
             </label>
             <Input
               id="new-task-title"
-              placeholder="Gorev basligi (orn: Landing page hero revizyonu)"
+              placeholder="Task title (orn: Landing page hero revizyonu)"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Aciklama
+              Description
             </label>
             <textarea
               className="w-full min-h-[110px] rounded-lg border border-border-light bg-transparent p-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 dark:border-border-dark dark:text-white dark:placeholder:text-slate-500"
-              placeholder="Gorev aciklamasi (kapsami aciklayin...)"
+              placeholder="Task description (describe the scope...)"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
@@ -1137,32 +1138,32 @@ export default function ProjectDetail() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1 sm:col-span-2">
               <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Etiketler
+                Tags
               </label>
               <Input
-                placeholder="Orn: ui, backend, bug"
+                placeholder="For example: ui, backend, bug"
                 value={tagsInput}
                 onChange={(event) => setTagsInput(event.target.value)}
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Oncelik
+                Priority
               </label>
               <select
                 className="h-10 w-full rounded-lg border border-border-light bg-white px-3 pr-8 text-sm dark:border-border-dark dark:bg-surface-dark"
                 value={priority}
                 onChange={(event) => setPriority(event.target.value)}
               >
-                <option value="low">Dusuk</option>
-                <option value="medium">Orta</option>
-                <option value="high">Yuksek</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
               </select>
             </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Son Tarih
+              Due Date
             </label>
             <Input
               type="date"
@@ -1176,12 +1177,12 @@ export default function ProjectDetail() {
       <Modal
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
-        title="Projeyi sil"
-        description={`"${project?.title || 'Proje'}" kalici olarak silinecek. Bu islem geri alinmaz.`}
+        title="Delete project"
+        description={`"${project?.title || 'Project'}" will be permanently deleted. This action cannot be undone.`}
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setDeleteModalOpen(false)}>
-              Vazgec
+              Cancel
             </Button>
             <Button
               size="sm"
@@ -1189,7 +1190,7 @@ export default function ProjectDetail() {
               onClick={handleDeleteProject}
               disabled={deleteProject.isPending}
             >
-              {deleteProject.isPending ? 'Siliniyor...' : 'Sil'}
+              {deleteProject.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </>
         }
@@ -1200,12 +1201,12 @@ export default function ProjectDetail() {
         onOpenChange={(open) => {
           if (!open) setTaskToDelete(null)
         }}
-        title="Gorevi sil"
-        description={`"${taskToDelete?.title || 'Gorev'}" kalici olarak silinecek. Bu islem geri alinmaz.`}
+        title="Delete task"
+        description={`"${taskToDelete?.title || 'Task'}" will be permanently deleted. This action cannot be undone.`}
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setTaskToDelete(null)}>
-              Vazgec
+              Cancel
             </Button>
             <Button
               size="sm"
@@ -1213,7 +1214,7 @@ export default function ProjectDetail() {
               onClick={handleDeleteTask}
               disabled={deleteTask.isPending}
             >
-              {deleteTask.isPending ? 'Siliniyor...' : 'Sil'}
+              {deleteTask.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </>
         }
@@ -1222,12 +1223,12 @@ export default function ProjectDetail() {
       <Modal
         open={bulkDeleteOpen}
         onOpenChange={setBulkDeleteOpen}
-        title="Secilen gorevleri sil"
-        description={`${selectedTaskIds.length} gorev kalici olarak silinecek. Bu islem geri alinmaz.`}
+        title="Delete selected tasks"
+        description={`${selectedTaskIds.length} tasks will be permanently deleted. This action cannot be undone.`}
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setBulkDeleteOpen(false)}>
-              Vazgec
+              Cancel
             </Button>
             <Button
               size="sm"
@@ -1235,7 +1236,7 @@ export default function ProjectDetail() {
               onClick={handleBulkDeleteTasks}
               disabled={bulkDeleteTasks.isPending || selectedTaskIds.length === 0}
             >
-              {bulkDeleteTasks.isPending ? 'Siliniyor...' : 'Toplu sil'}
+              {bulkDeleteTasks.isPending ? 'Deleting...' : 'Bulk delete'}
             </Button>
           </>
         }

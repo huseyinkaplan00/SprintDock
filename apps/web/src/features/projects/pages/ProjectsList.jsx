@@ -11,6 +11,7 @@ import { useToast } from '../../../components/ui/toast.jsx'
 import { getErrorMessage } from '../../../lib/api-error.js'
 import { useAuth } from '../../../hooks/use-auth.js'
 import { Skeleton } from '../../../components/common/skeleton.jsx'
+import { useI18n } from '../../../lib/i18n.js'
 
 const PROJECT_ICON_OPTIONS = [
   'rocket_launch',
@@ -27,34 +28,34 @@ function projectStatusMeta(status) {
   const value = (status || '').toLowerCase()
   if (value === 'active' || value === 'in_progress') {
     return {
-      label: 'Aktif',
+      label: 'Active',
       icon: 'timelapse',
       tone: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-500/20',
     }
   }
   if (value === 'completed' || value === 'done') {
     return {
-      label: 'Tamamlandi',
+      label: 'Completed',
       icon: 'check_circle',
       tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20',
     }
   }
   if (value === 'blocked') {
     return {
-      label: 'Engelli',
+      label: 'Blocked',
       icon: 'block',
       tone: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-500/20',
     }
   }
   if (value === 'archived') {
     return {
-      label: 'Arsivlendi',
+      label: 'Archived',
       icon: 'inventory_2',
       tone: 'bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 border-slate-200 dark:border-slate-500/20',
     }
   }
   return {
-    label: value || 'Aktif',
+    label: value || 'Active',
     icon: 'radio_button_checked',
     tone: 'bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400 border-slate-200 dark:border-slate-500/20',
   }
@@ -67,14 +68,14 @@ function shortId(value) {
 }
 
 function resolveUserLabel(identity, currentUserId, fallbackEmail) {
-  if (!identity) return fallbackEmail || 'Kullanici'
+  if (!identity) return fallbackEmail || 'User'
   if (typeof identity === 'object') {
     const id = String(identity._id || identity.id || '')
-    if (id && id === String(currentUserId)) return fallbackEmail || identity.email || 'Siz'
+    if (id && id === String(currentUserId)) return fallbackEmail || identity.email || 'You'
     return identity.email || identity.name || shortId(id)
   }
   const raw = String(identity)
-  if (raw === String(currentUserId)) return fallbackEmail || 'Siz'
+  if (raw === String(currentUserId)) return fallbackEmail || 'You'
   if (raw.includes('@')) return raw
   return shortId(raw)
 }
@@ -90,6 +91,7 @@ export default function ProjectsList() {
   const queryClient = useQueryClient()
   const { push } = useToast()
   const { user } = useAuth()
+  const { t } = useI18n()
   const [search, setSearch] = useState('')
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [title, setTitle] = useState('')
@@ -139,8 +141,8 @@ export default function ProjectsList() {
 
     if (!cleanTitle) {
       push({
-        title: 'Proje basligi zorunlu',
-        description: 'Lutfen proje icin bir baslik girin.',
+        title: t('Project title is required', 'Project title is required'),
+        description: t('Please enter a title for the project.', 'Please enter a project title.'),
         variant: 'danger',
       })
       return
@@ -148,8 +150,11 @@ export default function ProjectsList() {
 
     if (cleanTitle.length < 3) {
       push({
-        title: 'Baslik cok kisa',
-        description: 'Proje basligi en az 3 karakter olmali.',
+        title: t('Title is too short', 'Title is too short'),
+        description: t(
+          'Project title must be at least 3 characters.',
+          'Project title must be at least 3 characters.'
+        ),
         variant: 'danger',
       })
       return
@@ -157,8 +162,8 @@ export default function ProjectsList() {
 
     if (cleanDescription && cleanDescription.length < 3) {
       push({
-        title: 'Aciklama cok kisa',
-        description: 'Aciklama girmek isterseniz en az 3 karakter olmali.',
+        title: 'Description too short',
+        description: 'If you provide a description, it must be at least 3 characters.',
         variant: 'danger',
       })
       return
@@ -171,11 +176,17 @@ export default function ProjectsList() {
         tags,
         icon,
       })
-      push({ title: 'Proje olusturuldu' })
+      push({ title: t('Project created', 'Project created') })
     } catch (error) {
       push({
-        title: 'Proje olusturulamadi',
-        description: getErrorMessage(error, 'Proje olusturmak icin yetkiniz olmayabilir.'),
+        title: t('Project could not be created', 'Project could not be created'),
+        description: getErrorMessage(
+          error,
+          t(
+            'You may not have permission to create a project.',
+            'You may not have permission to create a project.'
+          )
+        ),
         variant: 'danger',
       })
     }
@@ -186,11 +197,17 @@ export default function ProjectsList() {
     try {
       await deleteProject.mutateAsync(deleteTarget._id)
       setDeleteTarget(null)
-      push({ title: 'Proje silindi' })
+      push({ title: t('Project deleted', 'Project deleted') })
     } catch (error) {
       push({
-        title: 'Proje silinemedi',
-        description: getErrorMessage(error, 'Bu projeyi silme yetkiniz olmayabilir.'),
+        title: t('Project could not be deleted', 'Project could not be deleted'),
+        description: getErrorMessage(
+          error,
+          t(
+            'You may not have permission to delete this project.',
+            'You may not have permission to delete this project.'
+          )
+        ),
         variant: 'danger',
       })
     }
@@ -201,15 +218,18 @@ export default function ProjectsList() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Projeler
+            {t('Projects', 'Projeler')}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
-            Ekibinizin devam eden islerini yonetin ve takip edin.
+            {t(
+              'Manage and track your team’s active work.',
+              'Ekibinizin devam eden islerini yonetin ve takip edin.'
+            )}
           </p>
         </div>
         <Button onClick={() => setCreateModalOpen(true)}>
           <span className="material-symbols-outlined text-[20px]">add</span>
-          Yeni Proje
+          {t('New Project', 'Yeni Proje')}
         </Button>
       </div>
 
@@ -220,7 +240,7 @@ export default function ProjectsList() {
           </span>
           <Input
             className="h-9 pl-9"
-            placeholder="Projeleri filtrele..."
+            placeholder={t('Filter projects...', 'Projeleri filtrele...')}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             type="text"
@@ -233,14 +253,14 @@ export default function ProjectsList() {
           <table className="w-full min-w-[900px] text-sm text-left">
             <thead className="sticky top-0 z-10 text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50/95 dark:bg-surface-dark/95 backdrop-blur-sm border-b border-border-light dark:border-border-dark">
               <tr>
-                <th className="px-6 py-3 font-medium min-w-[240px]">Baslik</th>
-                <th className="px-6 py-3 font-medium">Durum</th>
-                <th className="px-6 py-3 font-medium">Gorevler</th>
-                <th className="px-6 py-3 font-medium">Sahip</th>
-                <th className="px-6 py-3 font-medium">Ekip</th>
-                <th className="px-6 py-3 font-medium">Olusturuldu</th>
-                <th className="px-6 py-3 font-medium">Guncellendi</th>
-                <th className="px-6 py-3 font-medium text-right">Islemler</th>
+                <th className="px-6 py-3 font-medium min-w-[240px]">{t('Title', 'Baslik')}</th>
+                <th className="px-6 py-3 font-medium">{t('Status', 'Durum')}</th>
+                <th className="px-6 py-3 font-medium">{t('Tasks', 'Gorevler')}</th>
+                <th className="px-6 py-3 font-medium">Owner</th>
+                <th className="px-6 py-3 font-medium">{t('Team', 'Ekip')}</th>
+                <th className="px-6 py-3 font-medium">{t('Created', 'Olusturuldu')}</th>
+                <th className="px-6 py-3 font-medium">{t('Updated', 'Guncellendi')}</th>
+                <th className="px-6 py-3 font-medium text-right">{t('Actions', 'Islemler')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light dark:divide-border-dark">
@@ -266,7 +286,7 @@ export default function ProjectsList() {
               {!projectsQuery.isLoading && projects.length === 0 ? (
                 <tr>
                   <td className="px-6 py-8 text-slate-500 text-center" colSpan={8}>
-                    Proje bulunamadi.
+                    No projects found.
                   </td>
                 </tr>
               ) : null}
@@ -290,7 +310,7 @@ export default function ProjectsList() {
                             {project.title}
                           </span>
                           <span className="text-xs text-slate-500">
-                            {project.description || 'Aciklama yok'}
+                            {project.description || t('No description', 'Aciklama yok')}
                           </span>
                           {(project.tags || []).length ? (
                             <span className="mt-1 inline-flex max-w-[240px] flex-wrap gap-1">
@@ -308,7 +328,7 @@ export default function ProjectsList() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <HoverTooltip content={`Durum: ${status.label}`}>
+                      <HoverTooltip content={`Status: ${status.label}`}>
                         <span
                           className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-medium border ${status.tone}`}
                         >
@@ -319,13 +339,13 @@ export default function ProjectsList() {
                       </HoverTooltip>
                     </td>
                     <td className="px-6 py-4">
-                      <HoverTooltip content={`${project.taskCount || 0} gorev`}>
+                      <HoverTooltip content={`${project.taskCount || 0} tasks`}>
                         <div className="inline-flex items-center gap-2 rounded-lg border border-border-light bg-white px-2.5 py-1 text-xs text-slate-600 dark:border-border-dark dark:bg-white/5 dark:text-slate-300">
                           <span className="material-symbols-outlined text-[16px] text-primary">
                             task_alt
                           </span>
                           <span className="font-semibold">{project.taskCount || 0}</span>
-                          <span className="text-slate-400">gorev</span>
+                          <span className="text-slate-400">tasks</span>
                         </div>
                       </HoverTooltip>
                     </td>
@@ -337,7 +357,7 @@ export default function ProjectsList() {
                           user?.email
                         )
                         return (
-                          <HoverTooltip content={`Sahip: ${ownerLabel}`}>
+                          <HoverTooltip content={`Owner: ${ownerLabel}`}>
                             <span className="inline-flex size-8 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary ring-2 ring-white dark:ring-surface-dark">
                               {avatarInitial(ownerLabel)}
                             </span>
@@ -365,7 +385,12 @@ export default function ProjectsList() {
                           )
                         })}
                         {(project.members?.length || 0) > 3 ? (
-                          <HoverTooltip content={`${project.members.length} uye`}>
+                          <HoverTooltip
+                            content={t(
+                              `${project.members.length} members`,
+                              `${project.members.length} uye`
+                            )}
+                          >
                             <span className="inline-flex -ml-2 size-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[11px] font-semibold text-slate-500 dark:border-surface-dark dark:bg-slate-800 dark:text-slate-300">
                               +{project.members.length - 3}
                             </span>
@@ -384,7 +409,7 @@ export default function ProjectsList() {
                           to={`/projects/${project._id}`}
                           className="inline-flex items-center justify-center h-8 rounded-lg px-3 border border-border-light dark:border-border-dark hover:bg-slate-100 dark:hover:bg-white/10"
                         >
-                          Ac
+                          {t('Open', 'Ac')}
                         </Link>
                         <Button
                           size="sm"
@@ -393,7 +418,7 @@ export default function ProjectsList() {
                           onClick={() => setDeleteTarget(project)}
                           disabled={deleteProject.isPending}
                         >
-                          Sil
+                          Delete
                         </Button>
                       </div>
                     </td>
@@ -408,12 +433,12 @@ export default function ProjectsList() {
       <Modal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
-        title="Yeni Proje Olustur"
-        description="Calisma alani icin yeni bir girisim ekleyin."
+        title={t('Create New Project', 'Yeni Proje Olustur')}
+        description="Add a new initiative to your workspace."
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setCreateModalOpen(false)}>
-              Vazgec
+              {t('Cancel', 'Vazgec')}
             </Button>
             <Button
               size="sm"
@@ -421,7 +446,9 @@ export default function ProjectsList() {
               form="create-project-form"
               disabled={createProject.isPending}
             >
-              {createProject.isPending ? 'Olusturuluyor...' : 'Proje Olustur'}
+              {createProject.isPending
+                ? t('Creating...', 'Olusturuluyor...')
+                : t('Create Project', 'Proje Olustur')}
             </Button>
           </>
         }
@@ -429,16 +456,19 @@ export default function ProjectsList() {
         <form className="space-y-4" id="create-project-form" onSubmit={submitCreate}>
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Proje Basligi
+              {t('Project Title', 'Proje Basligi')}
             </label>
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Proje basligi (orn: Q4 Buyume Yol Haritasi)"
+              placeholder={t(
+                'Project title (for example: Q4 Growth Roadmap)',
+                'Proje basligi (orn: Q4 Buyume Yol Haritasi)'
+              )}
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Ikon</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Icon</label>
             <div className="grid grid-cols-8 gap-2">
               {PROJECT_ICON_OPTIONS.map((iconName) => (
                 <button
@@ -450,7 +480,7 @@ export default function ProjectsList() {
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border-light bg-slate-50 text-slate-500 hover:border-primary/40 hover:text-primary dark:border-border-dark dark:bg-white/5 dark:text-slate-300'
                   }`}
-                  aria-label={`Ikon sec: ${iconName}`}
+                  aria-label={`Icon sec: ${iconName}`}
                 >
                   <span className="material-symbols-outlined text-[18px]">{iconName}</span>
                 </button>
@@ -459,30 +489,33 @@ export default function ProjectsList() {
           </div>
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Aciklama
+              Description
             </label>
             <textarea
               className="w-full min-h-[120px] rounded-lg border border-border-light bg-transparent p-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 dark:border-border-dark dark:text-white dark:placeholder:text-slate-500"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Proje aciklamasi (bu projenin amaci nedir?)"
+              placeholder={t(
+                'Project description (what is this project about?)',
+                'Proje aciklamasi (bu projenin amaci nedir?)'
+              )}
             />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Sahip
+                Owner
               </label>
-              <Input readOnly value={user?.email || 'Aktif kullanici'} />
+              <Input readOnly value={user?.email || t('Active user', 'Aktif kullanici')} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Etiketler
+                {t('Tags', 'Etiketler')}
               </label>
               <Input
                 value={tagsInput}
                 onChange={(event) => setTagsInput(event.target.value)}
-                placeholder="Orn: marketing, q4"
+                placeholder={t('For example: marketing, q4', 'Orn: marketing, q4')}
               />
             </div>
           </div>
@@ -494,12 +527,12 @@ export default function ProjectsList() {
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null)
         }}
-        title="Projeyi sil"
-        description={`"${deleteTarget?.title || 'Proje'}" kalici olarak silinecek. Bu islem geri alinmaz.`}
+        title={t('Delete Project', 'Projeyi sil')}
+        description={`"${deleteTarget?.title || 'Project'}" will be permanently deleted. This action cannot be undone.`}
         footer={
           <>
             <Button size="sm" variant="outline" onClick={() => setDeleteTarget(null)}>
-              Vazgec
+              {t('Cancel', 'Vazgec')}
             </Button>
             <Button
               size="sm"
@@ -507,7 +540,9 @@ export default function ProjectsList() {
               onClick={handleDeleteProject}
               disabled={deleteProject.isPending}
             >
-              {deleteProject.isPending ? 'Siliniyor...' : 'Sil'}
+              {deleteProject.isPending
+                ? t('Deleting...', 'Siliniyor...')
+                : t('Delete', 'Sil')}
             </Button>
           </>
         }

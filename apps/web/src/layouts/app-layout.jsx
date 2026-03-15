@@ -5,6 +5,7 @@ import { useUiStore } from '../store/ui.store.js'
 import { useAuth } from '../hooks/use-auth.js'
 import { projectsApi } from '../api/projects.api.js'
 import { tasksApi } from '../api/tasks.api.js'
+import { useI18n } from '../lib/i18n.js'
 import logo from '../assets/logo.svg'
 
 function navClass(active) {
@@ -22,9 +23,9 @@ function statusDotClass(status) {
 }
 
 function statusLabel(status) {
-  if (status === 'done') return 'Tamamlandi'
-  if (status === 'in_progress') return 'Devam ediyor'
-  return 'Yapilacak'
+  if (status === 'done') return 'Completed'
+  if (status === 'in_progress') return 'In progress'
+  return 'Todo'
 }
 
 function SidebarProjectTasks({ projectId, activeTaskId }) {
@@ -46,7 +47,7 @@ function SidebarProjectTasks({ projectId, activeTaskId }) {
   }
 
   if (!tasks.length) {
-    return <p className="px-2 py-1 text-[11px] text-slate-500 dark:text-slate-400">Gorev yok</p>
+    return <p className="px-2 py-1 text-[11px] text-slate-500 dark:text-slate-400">No tasks</p>
   }
 
   return (
@@ -72,7 +73,7 @@ function SidebarProjectTasks({ projectId, activeTaskId }) {
       })}
       {tasks.length > 8 ? (
         <p className="px-2 pt-1 text-[11px] text-slate-500 dark:text-slate-400">
-          +{tasks.length - 8} gorev daha
+          +{tasks.length - 8} more tasks
         </p>
       ) : null}
     </div>
@@ -84,6 +85,7 @@ export default function AppLayout() {
   const { logout } = useAuth()
   const theme = useUiStore((state) => state.theme)
   const toggleTheme = useUiStore((state) => state.toggleTheme)
+  const { locale, setLocale, t } = useI18n()
   const location = useLocation()
   const [expandedProjectId, setExpandedProjectId] = useState('')
   const [taskSearchInput, setTaskSearchInput] = useState('')
@@ -151,10 +153,10 @@ export default function AppLayout() {
 
   const pageTitle = (() => {
     const path = location.pathname
-    if (path.startsWith('/projects/')) return 'Proje Detayi'
-    if (path.startsWith('/tasks/')) return 'Gorev Detayi'
-    if (path.startsWith('/profile')) return 'Profil'
-    return 'Projeler'
+    if (path.startsWith('/projects/')) return t('Project details', 'Project details')
+    if (path.startsWith('/tasks/')) return t('Task details', 'Task details')
+    if (path.startsWith('/profile')) return t('Profile', 'Profil')
+    return t('Projects', 'Projeler')
   })()
 
   return (
@@ -167,19 +169,19 @@ export default function AppLayout() {
             </div>
             <div className="flex flex-col justify-center overflow-hidden">
               <h1 className="text-sm font-semibold truncate">SprintDock</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-xs truncate">Calisma Alani</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs truncate">Workspace</p>
             </div>
           </div>
 
           <nav className="flex flex-col gap-1 flex-1">
             <NavLink to="/projects" className={({ isActive }) => navClass(isActive)}>
               <span className="material-symbols-outlined text-[20px]">folder_open</span>
-              <span className="text-sm font-medium">Projeler</span>
+              <span className="text-sm font-medium">{t('Projects', 'Projeler')}</span>
             </NavLink>
 
             <div className="mt-2 rounded-lg border border-border-light/80 bg-slate-50/60 p-2 dark:border-border-dark dark:bg-white/[0.02]">
               <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500 dark:text-slate-400">
-                Proje Agaci
+                {t('Project tree', 'Proje agaci')}
               </p>
               {projectsQuery.isLoading ? (
                 <div className="space-y-2 p-1">
@@ -226,7 +228,7 @@ export default function AppLayout() {
                               to={`/projects/${project._id}`}
                               className="mt-1 block rounded-md px-2 py-1.5 text-[11px] text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
                             >
-                              Proje detayina git
+                              {t('Open project details', 'Proje detaylarini ac')}
                             </NavLink>
                           </div>
                         ) : null}
@@ -236,7 +238,7 @@ export default function AppLayout() {
                 </div>
               ) : (
                 <p className="px-2 py-1 text-xs text-slate-500 dark:text-slate-400">
-                  Proje bulunamadi.
+                  {t('No projects found.', 'Proje bulunamadi.')}
                 </p>
               )}
             </div>
@@ -245,7 +247,7 @@ export default function AppLayout() {
           <div className="mt-auto pt-4 border-t border-border-light dark:border-border-dark flex flex-col gap-1">
             <NavLink to="/profile" className={({ isActive }) => navClass(isActive)}>
               <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
-              <span className="text-sm font-medium">Profil</span>
+              <span className="text-sm font-medium">Profile</span>
             </NavLink>
           </div>
         </div>
@@ -276,7 +278,10 @@ export default function AppLayout() {
               <input
                 ref={searchInputRef}
                 className="h-10 w-full rounded-xl border border-border-light bg-white/80 pl-10 pr-16 text-[16px] text-slate-900 outline-none transition-shadow focus:border-primary/50 focus:ring-2 focus:ring-primary/20 dark:border-border-dark dark:bg-surface-dark dark:text-white"
-                placeholder="Tum projelerde task ara..."
+                placeholder={t(
+                  'Search tasks across all projects...',
+                  'Tum projelerde gorev ara...'
+                )}
                 value={taskSearchInput}
                 onChange={(event) => setTaskSearchInput(event.target.value)}
                 onFocus={() => setTaskSearchOpen(true)}
@@ -297,7 +302,7 @@ export default function AppLayout() {
                 <div className="absolute inset-x-0 top-12 z-30 rounded-xl border border-border-light bg-white p-2 shadow-xl dark:border-border-dark dark:bg-surface-dark">
                   {taskSearchQueryResult.isLoading ? (
                     <p className="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">
-                      Gorevler araniyor...
+                      {t('Searching tasks...', 'Gorevler araniyor...')}
                     </p>
                   ) : searchedTasks.length ? (
                     <div className="space-y-1">
@@ -317,7 +322,8 @@ export default function AppLayout() {
                                 {task.title}
                               </span>
                               <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                                {project?.title || 'Proje'} - {statusLabel(task.status)}
+                                {project?.title || t('Project', 'Proje')} -{' '}
+                                {statusLabel(task.status)}
                               </span>
                             </span>
                             <span
@@ -329,17 +335,41 @@ export default function AppLayout() {
                     </div>
                   ) : (
                     <p className="px-2 py-2 text-xs text-slate-500 dark:text-slate-400">
-                      Eslesen gorev bulunamadi.
+                      {t('No matching tasks found.', 'Eslesen gorev bulunamadi.')}
                     </p>
                   )}
                 </div>
               ) : null}
             </div>
+            <div className="inline-flex h-9 items-center rounded-lg border border-border-light bg-white/80 p-1 dark:border-border-dark dark:bg-surface-dark">
+              <button
+                className={`rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
+                  locale === 'en'
+                    ? 'bg-primary text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+                onClick={() => setLocale('en')}
+                type="button"
+              >
+                EN
+              </button>
+              <button
+                className={`rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
+                  locale === 'tr'
+                    ? 'bg-primary text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+                onClick={() => setLocale('tr')}
+                type="button"
+              >
+                TR
+              </button>
+            </div>
             <button
               className="inline-flex size-9 items-center justify-center rounded-lg border border-border-light bg-white/80 text-slate-500 transition-colors hover:border-primary/40 hover:text-primary dark:border-border-dark dark:bg-surface-dark dark:text-slate-300"
               onClick={toggleTheme}
-              title="Tema degistir"
-              aria-label="Tema degistir"
+              title={t('Toggle theme', 'Toggle theme')}
+              aria-label={t('Toggle theme', 'Toggle theme')}
             >
               <span className="material-symbols-outlined text-[18px]">
                 {theme === 'dark' ? 'light_mode' : 'dark_mode'}
@@ -348,8 +378,8 @@ export default function AppLayout() {
             <button
               className="inline-flex size-9 items-center justify-center rounded-lg border border-border-light bg-white/80 text-slate-500 transition-colors hover:border-primary/40 hover:text-primary dark:border-border-dark dark:bg-surface-dark dark:text-slate-300"
               onClick={logout}
-              title="Cikis"
-              aria-label="Cikis yap"
+              title="Logout"
+              aria-label={t('Log out', 'Log out')}
             >
               <span className="material-symbols-outlined text-[18px]">logout</span>
             </button>
@@ -360,7 +390,7 @@ export default function AppLayout() {
             <button
               className="inline-flex items-center justify-center size-9 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
               onClick={toggleTheme}
-              aria-label="Temayi degistir"
+              aria-label={t('Toggle theme', 'Toggle theme')}
             >
               <span className="material-symbols-outlined text-[20px]">
                 {theme === 'dark' ? 'light_mode' : 'dark_mode'}
@@ -369,7 +399,7 @@ export default function AppLayout() {
             <button
               className="inline-flex items-center justify-center size-9 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
               onClick={logout}
-              aria-label="Cikis yap"
+              aria-label={t('Log out', 'Log out')}
             >
               <span className="material-symbols-outlined text-[20px]">logout</span>
             </button>
@@ -384,7 +414,7 @@ export default function AppLayout() {
                 : 'px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5'
             }
           >
-            Projeler
+            {t('Projects', 'Projeler')}
           </NavLink>
           <NavLink
             to="/profile"
@@ -394,7 +424,7 @@ export default function AppLayout() {
                 : 'px-3 py-1.5 rounded-md text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5'
             }
           >
-            Profil
+            Profile
           </NavLink>
         </nav>
 

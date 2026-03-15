@@ -26,10 +26,10 @@ const projectSchema = new Schema(
   { timestamps: true }
 )
 
-const Project = mongoose.models.Project || mongoose.model('Project', projectSchema)
+const Projectct = mongoose.models.Projectct || mongoose.model('Projectct', projectSchema)
 
-export async function createProject({ title, description, icon, ownerId, memberIds, tags }) {
-  return Project.create({
+export async function createProjectct({ title, description, icon, ownerId, memberIds, tags }) {
+  return Projectct.create({
     title,
     description,
     icon: icon || 'rocket_launch',
@@ -39,25 +39,34 @@ export async function createProject({ title, description, icon, ownerId, memberI
   })
 }
 
-export async function listProjectsByMember(userId) {
-  return Project.find({ members: userId })
+export async function listProjectctsByMember(userId) {
+  return Projectct.find({ members: userId })
     .sort({ updatedAt: -1 })
     .populate('owner', 'email')
     .populate('members', 'email')
 }
 
-export async function findProjectById(projectId) {
-  return Project.findById(projectId)
+export async function findProjectctById(projectId) {
+  return Projectct.findById(projectId)
 }
 
-export async function findProjectByIdDetailed(projectId) {
-  return Project.findById(projectId).populate('owner', 'email').populate('members', 'email')
+export async function findProjectctByIdDetailed(projectId) {
+  return Projectct.findById(projectId).populate('owner', 'email').populate('members', 'email')
 }
 
-export async function updateProject(projectId, updates) {
-  return Project.findByIdAndUpdate(projectId, updates, { new: true })
+export async function updateProjectct(projectId, updates) {
+  return Projectct.findByIdAndUpdate(projectId, updates, { new: true })
 }
 
-export async function deleteProject(projectId) {
-  return Project.findByIdAndDelete(projectId)
+export async function deleteProjectct(projectId) {
+  return Projectct.findByIdAndDelete(projectId)
+}
+
+export {
+  createProjectct as createProject,
+  listProjectctsByMember as listProjectsByMember,
+  findProjectctById as findProjectById,
+  findProjectctByIdDetailed as findProjectByIdDetailed,
+  updateProjectct as updateProject,
+  deleteProjectct as deleteProject,
 }

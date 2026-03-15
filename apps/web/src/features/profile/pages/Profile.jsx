@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/button.jsx'
 import { useToast } from '../../../components/ui/toast.jsx'
 import { getErrorMessage } from '../../../lib/api-error.js'
 import { Skeleton } from '../../../components/common/skeleton.jsx'
+import { useI18n } from '../../../lib/i18n.js'
 
 function parseSessionId(token) {
   if (!token || typeof window === 'undefined') return ''
@@ -26,7 +27,7 @@ function parseSessionId(token) {
 
 function normalizeIp(ip) {
   const value = String(ip || '').trim()
-  if (!value) return 'Bilinmeyen IP'
+  if (!value) return 'Unknown IP'
   return value.replace(/^::ffff:/, '')
 }
 
@@ -35,8 +36,8 @@ function parseUserAgent(device) {
   if (!ua) {
     return {
       icon: 'devices',
-      title: 'Bilinmeyen cihaz',
-      detail: 'Tarayici bilgisi yok',
+      title: 'Unknown device',
+      detail: 'No browser information',
     }
   }
 
@@ -56,7 +57,7 @@ function parseUserAgent(device) {
     { regex: /linux/i, label: 'Linux' },
   ]
 
-  let browser = 'Tarayici'
+  let browser = 'Browser'
   let browserVersion = ''
   for (const rule of browserRules) {
     const match = ua.match(rule.regex)
@@ -67,7 +68,7 @@ function parseUserAgent(device) {
     }
   }
 
-  let os = 'Bilinmeyen isletim sistemi'
+  let os = 'Unknown operating system'
   let osVersion = ''
   for (const rule of osRules) {
     const match = ua.match(rule.regex)
@@ -90,18 +91,19 @@ function parseUserAgent(device) {
     detail:
       [browserVersion ? `v${browserVersion.split('.')[0]}` : '', osVersion ? `OS ${osVersion}` : '']
         .filter(Boolean)
-        .join(' · ') || 'Surum bilgisi yok',
+        .join(' · ') || 'No version information',
   }
 }
 
 function locationLabel(ip) {
-  return `${normalizeIp(ip)} • Konum algilanamadi`
+  return `${normalizeIp(ip)} • Location unavailable`
 }
 
 export default function ProfilePage() {
   const queryClient = useQueryClient()
   const { accessToken, user } = useAuth()
   const { push } = useToast()
+  const { t } = useI18n()
   const currentSessionId = useMemo(() => parseSessionId(accessToken), [accessToken])
 
   const sessionsQuery = useQuery({
@@ -132,11 +134,11 @@ export default function ProfilePage() {
   const handleRevokeSession = async (sessionId) => {
     try {
       await revokeSession.mutateAsync(sessionId)
-      push({ title: 'Oturum kaldirildi' })
+      push({ title: 'Session removed' })
     } catch (error) {
       push({
-        title: 'Oturum kaldirilamadi',
-        description: getErrorMessage(error, 'Bu oturumu kapatmak icin yetkiniz olmayabilir.'),
+        title: 'Session could not be removed',
+        description: getErrorMessage(error, 'You may not have permission to close this session.'),
         variant: 'danger',
       })
     }
@@ -145,11 +147,11 @@ export default function ProfilePage() {
   const handleRevokeOthers = async () => {
     try {
       await revokeOthers.mutateAsync()
-      push({ title: 'Diger oturumlar kapatildi' })
+      push({ title: 'Other sessions closed' })
     } catch (error) {
       push({
-        title: 'Oturumlar kapatilamadi',
-        description: getErrorMessage(error, 'Aktif oturumlar su anda kapatilamiyor.'),
+        title: 'Sessions could not be closed',
+        description: getErrorMessage(error, 'Active sessions cannot be closed right now.'),
         variant: 'danger',
       })
     }
@@ -159,10 +161,10 @@ export default function ProfilePage() {
     <div className="w-full max-w-[960px] mx-auto flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <p className="text-[#111218] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">
-          Profil
+          Profile
         </p>
         <p className="text-[#616889] dark:text-gray-400 text-base font-normal leading-normal">
-          Oturum ve guvenlik ayarlarinizi yonetin.
+          Manage your session and security settings.
         </p>
       </div>
 
@@ -172,10 +174,10 @@ export default function ProfilePage() {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-[#111218] dark:text-white">
-            {user?.email || 'Kullanici'}
+            {user?.email || t('User', 'User')}
           </p>
           <p className="text-xs text-[#616889] dark:text-gray-400">
-            {(user?.role || 'member').toLowerCase()} - aktif oturum
+            {(user?.role || 'member').toLowerCase()} - {t('active session', 'active session')}
           </p>
           {currentSession?.device ? (
             <p className="truncate text-xs text-[#616889] dark:text-gray-400">
@@ -188,11 +190,13 @@ export default function ProfilePage() {
       <div className="flex flex-col bg-white dark:bg-[#15192b] rounded-xl border border-[#dbdde6] dark:border-gray-800 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-[#f0f1f4] dark:border-gray-800">
           <h1 className="text-[#111218] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">
-            Aktif Oturumlar
+            Active Sessions
           </h1>
           <p className="text-[#616889] dark:text-gray-400 text-sm font-normal leading-normal mt-2 max-w-2xl">
-            Bu listede hesabiniza giris yapan cihazlar yer alir. Tanimadiginiz oturumlari
-            kaldirabilirsiniz.
+            {t(
+              'This list shows devices signed into your account. Remove any session you do not recognize.',
+              'This list shows devices signed into your account. Remove any session you do not recognize.'
+            )}
           </p>
         </div>
 
@@ -206,7 +210,7 @@ export default function ProfilePage() {
           ) : null}
 
           {!sessionsQuery.isLoading && sessions.length === 0 ? (
-            <div className="p-5 text-sm text-[#616889] dark:text-gray-400">Aktif oturum yok.</div>
+            <div className="p-5 text-sm text-[#616889] dark:text-gray-400">No active sessions.</div>
           ) : null}
 
           {sessions.map((session) => {
@@ -234,7 +238,7 @@ export default function ProfilePage() {
                       </p>
                       {isCurrent ? (
                         <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                          Bu cihaz
+                          This device
                         </span>
                       ) : null}
                     </div>
@@ -245,13 +249,15 @@ export default function ProfilePage() {
                       {locationLabel(session.ip)}
                     </p>
                     <p className="text-[#616889] dark:text-gray-400 text-xs mt-0.5">
-                      Oturum ID: {String(session.id || '').slice(0, 8)}...
+                      Session ID: {String(session.id || '').slice(0, 8)}...
                     </p>
                     <p className="text-[#616889] dark:text-gray-400 text-xs mt-0.5">
-                      Olusturulma {formatDate(session.createdAt)}
+                      Created {formatDate(session.createdAt)}
                     </p>
                     <p className="text-[#616889] dark:text-gray-400 text-xs mt-0.5">
-                      {isCurrent ? 'Su an aktif' : `Son aktiflik ${formatDate(session.lastUsed)}`}
+                      {isCurrent
+                        ? 'Currently active'
+                        : `Last active ${formatDate(session.lastUsed)}`}
                     </p>
                   </div>
                 </div>
@@ -263,7 +269,7 @@ export default function ProfilePage() {
                     onClick={() => handleRevokeSession(session.id)}
                     disabled={revokeSession.isPending}
                   >
-                    Kaldir
+                    {t('Remove', 'Kaldir')}
                   </Button>
                 ) : null}
               </div>
@@ -274,10 +280,13 @@ export default function ProfilePage() {
         <div className="p-5 bg-gray-50 dark:bg-[#1c2136]/50 flex items-center justify-between">
           <div className="flex flex-col">
             <p className="text-[#111218] dark:text-white text-sm font-semibold">
-              Her yerden cikis yap
+              {t('Sign out everywhere', 'Her yerden cikis yap')}
             </p>
             <p className="text-[#616889] dark:text-gray-400 text-xs mt-1">
-              Bu islem bu cihaz disindaki tum oturumlari sonlandirir.
+              {t(
+                'This ends every session except the current device.',
+                'Bu islem bu cihaz disindaki tum oturumlari sonlandirir.'
+              )}
             </p>
           </div>
           <Button
@@ -288,7 +297,9 @@ export default function ProfilePage() {
             disabled={revokeOthers.isPending}
           >
             <span className="material-symbols-outlined text-[16px]">logout</span>
-            {revokeOthers.isPending ? 'Isleniyor...' : 'Diger tum oturumlari kaldir'}
+            {revokeOthers.isPending
+              ? t('Processing...', 'Isleniyor...')
+              : t('Remove all other sessions', 'Diger tum oturumlari kaldir')}
           </Button>
         </div>
       </div>

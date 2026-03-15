@@ -17,7 +17,7 @@ import { publishTaskCreated, publishTaskAssigned } from './events.js'
 
 function ensureObjectId(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw httpError(400, 'Gecersiz kimlik')
+    throw httpError(400, 'Invalid identifier')
   }
 }
 
@@ -38,9 +38,9 @@ function normalizeTags(tags) {
 
 async function ensureProjectMember(projectId, userId) {
   const project = await findProjectById(projectId)
-  if (!project) throw httpError(404, 'Proje bulunamadi')
+  if (!project) throw httpError(404, 'Project not found')
   const isMember = project.members.some((m) => String(m) === String(userId))
-  if (!isMember) throw httpError(403, 'Yasak')
+  if (!isMember) throw httpError(403, 'Forbidden')
   return project
 }
 
@@ -97,7 +97,7 @@ export async function listTasksService({ userId, projectId, query }) {
 export async function getTaskService({ userId, taskId }) {
   ensureObjectId(taskId)
   const task = await findTaskById(taskId)
-  if (!task) throw httpError(404, 'Gorev bulunamadi')
+  if (!task) throw httpError(404, 'Task not found')
   await ensureProjectMember(task.projectId, userId)
   return findTaskByIdDetailed(taskId)
 }
@@ -105,7 +105,7 @@ export async function getTaskService({ userId, taskId }) {
 export async function updateTaskService({ userId, taskId, updates }) {
   ensureObjectId(taskId)
   const task = await findTaskById(taskId)
-  if (!task) throw httpError(404, 'Gorev bulunamadi')
+  if (!task) throw httpError(404, 'Task not found')
   await ensureProjectMember(task.projectId, userId)
 
   const wasAssignee = task.assignee ? String(task.assignee) : null
@@ -147,7 +147,7 @@ export async function updateTaskService({ userId, taskId, updates }) {
 export async function deleteTaskService({ userId, taskId }) {
   ensureObjectId(taskId)
   const task = await findTaskById(taskId)
-  if (!task) throw httpError(404, 'Gorev bulunamadi')
+  if (!task) throw httpError(404, 'Task not found')
   await ensureProjectMember(task.projectId, userId)
 
   await deleteTask(taskId)
@@ -159,7 +159,7 @@ export async function bulkDeleteTasksService({ userId, taskIds }) {
   normalizedIds.forEach(ensureObjectId)
 
   const tasks = await findTasksByIds(normalizedIds)
-  if (tasks.length !== normalizedIds.length) throw httpError(404, 'Bazi gorevler bulunamadi')
+  if (tasks.length !== normalizedIds.length) throw httpError(404, 'Some tasks were not found')
 
   const projectIds = [...new Set(tasks.map((task) => String(task.projectId)))]
   for (const projectId of projectIds) {

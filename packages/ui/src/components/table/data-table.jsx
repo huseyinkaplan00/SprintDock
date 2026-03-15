@@ -15,7 +15,7 @@ export function DataTable({
   columns,
   initialPageSize = 10,
   initialColumnVisibility,
-  emptyText = 'Kayit bulunamadi.',
+  emptyText = 'No records found.',
   loading = false,
   loadingRows = 6,
   renderToolbar,

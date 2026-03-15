@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/button.jsx'
 import { Input } from '../../../components/ui/input.jsx'
 import { useToast } from '../../../components/ui/toast.jsx'
 import { getErrorMessage } from '../../../lib/api-error.js'
+import { useI18n } from '../../../lib/i18n.js'
 import logo from '../../../assets/logo.svg'
 
 function OtpInputs({ value, onChange, disabled }) {
@@ -103,10 +104,11 @@ function OtpInputs({ value, onChange, disabled }) {
 }
 
 export default function LoginPage() {
-  // API bazen retryAfter donmezse backend default penceresine gore korumali bekleme uygula.
+  // Use a conservative fallback when the API does not return retryAfter.
   const RESEND_FALLBACK_WAIT_SEC = 60
   const navigate = useNavigate()
   const { push } = useToast()
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
   const [otpRequested, setOtpRequested] = useState(false)
@@ -181,22 +183,22 @@ export default function LoginPage() {
   const submitEmail = async () => {
     const cleanEmail = email.trim()
     if (resendCountdown > 0) {
-      const reason = `Cok fazla istek algilandi. Yeni OTP kodu icin ${resendCountdownLabel} bekleyin.`
+      const reason = `Too many requests algilandi. Wait for a new OTP for ${resendCountdownLabel} seconds before retrying.`
       setMessage(reason)
-      push({ title: 'Bekleme suresi var', description: reason, variant: 'danger' })
+      push({ title: 'Wait time in effect', description: reason, variant: 'danger' })
       return
     }
 
     if (!cleanEmail) {
-      const reason = 'E-posta zorunlu. Lutfen e-posta adresinizi girin.'
+      const reason = 'Email is required. Please enter your email address.'
       setMessage(reason)
-      push({ title: 'E-posta gerekli', description: reason, variant: 'danger' })
+      push({ title: 'Email required', description: reason, variant: 'danger' })
       return
     }
     if (!validateEmail(cleanEmail)) {
-      const reason = 'Gecersiz e-posta formati. Ornek: ad@domain.com'
+      const reason = 'Invalid email format. Example: name@domain.com'
       setMessage(reason)
-      push({ title: 'E-posta gecersiz', description: reason, variant: 'danger' })
+      push({ title: 'Invalid email', description: reason, variant: 'danger' })
       return
     }
 
@@ -210,10 +212,13 @@ export default function LoginPage() {
       lastAutoSubmitRef.current = ''
       setOtpExpiresAt(Date.now() + expiresInSec * 1000)
       setResendBlockedUntil(0)
-      if (data?.otp) setMessage(`OTP (gelistirme): ${data.otp}`)
+      if (data?.otp) setMessage(`OTP (dev): ${data.otp}`)
       push({
-        title: 'OTP kodu gonderildi',
-        description: `Kod ${Math.ceil(expiresInSec / 60)} dakika icinde sona erecek.`,
+        title: t('OTP sent', 'OTP sent'),
+        description: t(
+          `The code will expire in ${Math.ceil(expiresInSec / 60)} minute(s).`,
+          `Kod ${Math.ceil(expiresInSec / 60)} dakika icinde sona erecek.`
+        ),
       })
     } catch (error) {
       const retryAfterSec = Number(error?.retryAfterSec || 0)
@@ -226,13 +231,10 @@ export default function LoginPage() {
       if (waitSec > 0) {
         setResendBlockedUntil(Date.now() + waitSec * 1000)
       }
-      const baseReason = getErrorMessage(error, 'OTP kodu su anda gonderilemiyor.')
-      const reason =
-        waitSec > 0 && !baseReason.includes('sn sonra')
-          ? `${baseReason}. ${waitSec} sn sonra tekrar deneyin.`
-          : baseReason
+      const baseReason = getErrorMessage(error, 'OTP cannot be sent right now.')
+      const reason = waitSec > 0 ? `${baseReason}. ${waitSec}s remaining.` : baseReason
       setMessage(reason)
-      push({ title: 'OTP gonderilemedi', description: reason, variant: 'danger' })
+      push({ title: 'OTP could not be sent', description: reason, variant: 'danger' })
     } finally {
       setLoading(false)
     }
@@ -240,9 +242,9 @@ export default function LoginPage() {
 
   const submitOtp = async () => {
     if (otp.length !== 6) {
-      const reason = 'OTP kodu 6 haneli olmali.'
+      const reason = 'OTP must be 6 digits.'
       setMessage(reason)
-      push({ title: 'OTP eksik', description: reason, variant: 'danger' })
+      push({ title: 'OTP incomplete', description: reason, variant: 'danger' })
       return
     }
 
@@ -250,12 +252,12 @@ export default function LoginPage() {
     setMessage('')
     try {
       await verifyOtp(email.trim(), otp)
-      push({ title: 'Giris basarili' })
+      push({ title: 'Login successful' })
       navigate('/projects')
     } catch (error) {
-      const reason = getErrorMessage(error, 'Kod dogrulanamadi.')
+      const reason = getErrorMessage(error, 'Code could not be verified.')
       setMessage(reason)
-      push({ title: 'Giris basarisiz', description: reason, variant: 'danger' })
+      push({ title: 'Login failed', description: reason, variant: 'danger' })
     } finally {
       setLoading(false)
     }
@@ -273,27 +275,27 @@ export default function LoginPage() {
               <img alt="SprintDock" className="logo-float h-8 w-8" src={logo} />
             </div>
             <h2 className="text-[#111218] dark:text-white tracking-tight text-2xl font-bold leading-tight px-4 text-center">
-              SprintDock'a Giris Yap
+              Sign in to SprintDock
             </h2>
           </div>
 
           <div className="px-8 pb-4">
             <p className="text-gray-500 dark:text-gray-400 text-sm leading-normal text-center">
-              E-posta adresinize 6 haneli bir kod gonderecegiz ve erisiminizi dogrulayacagiz.
+              We will send a 6-digit code to your email to verify your access.
             </p>
           </div>
 
           <div className="px-8 pt-2 pb-6">
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-gray-700 dark:text-gray-300 ml-1">
-                E-posta adresi
+                Email address
               </label>
               <div className="relative flex items-center">
                 <Input
                   className="h-10 bg-gray-50 dark:bg-white/5"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  placeholder="ornek@sprintdock.com"
+                  placeholder="name@sprintdock.com"
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck={false}
@@ -324,8 +326,8 @@ export default function LoginPage() {
                   {resendCountdown > 0
                     ? `${resendCountdownLabel}`
                     : otpRequested
-                      ? 'Tekrar Gonder'
-                      : 'OTP Gonder'}
+                      ? t('Resend', 'Tekrar gonder')
+                      : 'Send OTP'}
                 </Button>
               </div>
             </div>
@@ -333,7 +335,7 @@ export default function LoginPage() {
 
           <div className="px-8 pb-2">
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 ml-1 mb-3 text-center">
-              Dogrulama kodunu girin
+              Enter verification code
             </label>
             <div className="flex justify-center">
               <OtpInputs value={otp} onChange={setOtp} disabled={!otpRequested || loading} />
@@ -342,7 +344,7 @@ export default function LoginPage() {
 
           <div className="px-8 py-4 flex justify-between items-center text-sm">
             <span className="text-gray-500 dark:text-gray-400">
-              {otpRequested ? `Sona ermesine ${countdownLabel}` : 'OTP istemek icin e-posta girin'}
+              {otpRequested ? `Expires in ${countdownLabel}` : 'Enter an email to request OTP'}
             </span>
             <Button
               variant="ghost"
@@ -353,14 +355,17 @@ export default function LoginPage() {
             >
               <span className="material-symbols-outlined text-[16px]">refresh</span>
               {resendCountdown > 0
-                ? `Tekrar gonder (${resendCountdownLabel})`
-                : 'Kodu tekrar gonder'}
+                ? t(`Resend (${resendCountdownLabel})`, `Tekrar gonder (${resendCountdownLabel})`)
+                : t('Resend code', 'Kodu yeniden gonder')}
             </Button>
           </div>
           {resendCountdown > 0 ? (
             <div className="px-8 pb-1">
               <p className="text-xs text-amber-600 dark:text-amber-300">
-                Cok fazla istek nedeniyle yeni kodu {resendCountdownLabel} sonra isteyebilirsiniz.
+                {t(
+                  `You can request a new code after ${resendCountdownLabel}.`,
+                  `${resendCountdownLabel} sonra yeni kod isteyebilirsiniz.`
+                )}
               </p>
             </div>
           ) : null}
@@ -371,7 +376,9 @@ export default function LoginPage() {
               onClick={submitOtp}
               disabled={!otpRequested || loading}
             >
-              {loading ? 'Dogrulaniyor...' : 'Dogrula ve Giris Yap'}
+              {loading
+                ? t('Verifying...', 'Verifying...')
+                : t('Verify & Sign in', 'Verify & Sign in')}
             </Button>
             {message ? (
               <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-3">{message}</p>
@@ -380,7 +387,7 @@ export default function LoginPage() {
 
           <div className="bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-white/5 px-8 py-4 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              SprintDock guvenligi ile korunur. Gizlilik politikasi yakinda yayinda.
+              Protected by SprintDock security. Privacy policy coming soon.
             </p>
           </div>
         </div>

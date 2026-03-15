@@ -12,7 +12,7 @@ import { countTasksByProjectIds } from '../tasks/repository.js'
 
 function ensureObjectId(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw httpError(400, 'Gecersiz kimlik')
+    throw httpError(400, 'Invalid identifier')
   }
 }
 
@@ -43,10 +43,10 @@ export async function listProjectsService({ userId }) {
 export async function getProjectService({ userId, projectId }) {
   ensureObjectId(projectId)
   const project = await findProjectById(projectId)
-  if (!project) throw httpError(404, 'Proje bulunamadi')
+  if (!project) throw httpError(404, 'Project not found')
 
   const isMember = project.members.some((m) => String(m) === String(userId))
-  if (!isMember) throw httpError(403, 'Yasak')
+  if (!isMember) throw httpError(403, 'Forbidden')
 
   return findProjectByIdDetailed(projectId)
 }
@@ -54,10 +54,10 @@ export async function getProjectService({ userId, projectId }) {
 export async function updateProjectService({ userId, role, projectId, updates }) {
   ensureObjectId(projectId)
   const project = await findProjectById(projectId)
-  if (!project) throw httpError(404, 'Proje bulunamadi')
+  if (!project) throw httpError(404, 'Project not found')
 
   const isOwner = String(project.owner) === String(userId)
-  if (!isOwner && role !== 'admin') throw httpError(403, 'Yasak')
+  if (!isOwner && role !== 'admin') throw httpError(403, 'Forbidden')
 
   const next = {
     title: updates.title ?? project.title,
@@ -78,11 +78,19 @@ export async function updateProjectService({ userId, role, projectId, updates })
 export async function deleteProjectService({ userId, role, projectId }) {
   ensureObjectId(projectId)
   const project = await findProjectById(projectId)
-  if (!project) throw httpError(404, 'Proje bulunamadi')
+  if (!project) throw httpError(404, 'Project not found')
 
   const isOwner = String(project.owner) === String(userId)
-  if (!isOwner && role !== 'admin') throw httpError(403, 'Yasak')
+  if (!isOwner && role !== 'admin') throw httpError(403, 'Forbidden')
 
   await deleteProject(projectId)
   return { ok: true }
+}
+
+export {
+  createProjectService as createProjectctService,
+  listProjectsService as listProjectctsService,
+  getProjectService as getProjectctService,
+  updateProjectService as updateProjectctService,
+  deleteProjectService as deleteProjectctService,
 }

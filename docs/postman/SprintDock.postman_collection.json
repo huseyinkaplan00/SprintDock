@@ -67,7 +67,10 @@
           { "key": "Content-Type", "value": "application/json" },
           { "key": "Authorization", "value": "Bearer {{accessToken}}" }
         ],
-        "body": { "mode": "raw", "raw": "{\"title\":\"Demo\",\"description\":\"Portfolio demo project\"}" },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\":\"Demo\",\"description\":\"Portfolio demo project\"}"
+        },
         "url": {
           "raw": "{{baseUrl}}/api/projects",
           "host": ["{{baseUrl}}"],
@@ -88,7 +91,7 @@
       }
     },
     {
-      "name": "Gorevler - Olustur",
+      "name": "Tasks - Create",
       "request": {
         "method": "POST",
         "header": [
@@ -97,7 +100,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"projectId\":\"{{projectId}}\",\"title\":\"Demo Gorev\",\"description\":\"Postman uzerinden\",\"priority\":\"high\"}"
+          "raw": "{\"projectId\":\"{{projectId}}\",\"title\":\"Demo Task\",\"description\":\"Via Postman\",\"priority\":\"high\"}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/tasks",
@@ -107,7 +110,7 @@
       }
     },
     {
-      "name": "Gorevler - Atanan Guncelle",
+      "name": "Tasks - Update Assignee",
       "request": {
         "method": "PATCH",
         "header": [
@@ -123,7 +126,7 @@
       }
     },
     {
-      "name": "Yorumlar - Ekle",
+      "name": "Commentlar - Ekle",
       "request": {
         "method": "POST",
         "header": [
@@ -142,7 +145,7 @@
       }
     },
     {
-      "name": "Oturumlar - Listele",
+      "name": "Sessions - List",
       "request": {
         "method": "GET",
         "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],

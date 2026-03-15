@@ -34,7 +34,7 @@ export function createApp() {
       publishEvent('task_created', payload)
       res.json({ ok: true, published: 'task_created', payload })
     } catch (_err) {
-      res.status(503).json({ ok: false, error: 'Rabbit hazir degil' })
+      res.status(503).json({ ok: false, error: 'Rabbit is not ready' })
     }
   })
 
@@ -46,7 +46,7 @@ export function createApp() {
 
     const { projectId, event, payload } = req.body || {}
     if (!projectId || !event) {
-      return res.status(400).json({ ok: false, error: 'projectId ve event zorunlu' })
+      return res.status(400).json({ ok: false, error: 'projectId and event are required' })
     }
 
     try {
